@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
-  IconSpark, IconHeart, IconArrowLeft, IconUser,
+  IconSpark, IconHeart, IconArrowLeft, IconArrowRight, IconUser,
   TopNav, DifficultyBadge, CategoryBadge
 } from "../components/Components.jsx";
 import { PrepCoach } from "../components/PrepBot.jsx";
@@ -156,15 +156,21 @@ const Solve = () => {
               />
               <div style={{ padding: "14px 20px", background: "var(--gray-50)",
                              borderTop: "1px solid var(--gray-200)",
-                             display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                             display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
                 {error ? (
                   <span style={{ fontSize: 13, color: "#DC2626" }}>{error}</span>
                 ) : (
                   <span />
                 )}
-                <button className="btn btn-primary" onClick={handleSubmit} disabled={submitting}>
-                  <IconSpark size={14} /> {submitting ? "제출 중..." : "AI 첨삭 받기"}
-                </button>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button className="btn btn-secondary"
+                          onClick={() => setTab("others")}>
+                    다른 사람 풀이 보러가기 <IconArrowRight size={12} style={{ verticalAlign: -1 }} />
+                  </button>
+                  <button className="btn btn-primary" onClick={handleSubmit} disabled={submitting}>
+                    <IconSpark size={14} /> {submitting ? "제출 중..." : "AI 첨삭 받기"}
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -177,7 +183,8 @@ const Solve = () => {
                 </div>
               ) : (
                 otherAnswers.map((a, i) => (
-                  <div key={a.id} className="card" style={{ padding: 20 }}>
+                  <div key={a.id} className="card row-hover" style={{ padding: 20, cursor: "pointer" }}
+                       onClick={() => navigate(`/answer?id=${a.id}`)}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
                       <div className="avatar" style={{
                         width: 36, height: 36,
@@ -190,7 +197,17 @@ const Solve = () => {
                         <div className="t-xs">{new Date(a.createdAt).toLocaleDateString("ko-KR")}</div>
                       </div>
                     </div>
-                    <div className="t-body" style={{ fontSize: 14, whiteSpace: "pre-wrap" }}>{a.content}</div>
+                    <div className="t-body" style={{ fontSize: 14, whiteSpace: "pre-wrap", marginBottom: 12 }}>
+                      {a.content}
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 16,
+                                   paddingTop: 10, borderTop: "1px solid var(--gray-100)",
+                                   fontSize: 13, color: "var(--gray-600)" }}>
+                      <span style={{ fontWeight: 500 }}>💬 {a.commentCount ?? 0}</span>
+                      <span style={{ marginLeft: "auto", color: "var(--blue-600)", fontWeight: 500 }}>
+                        댓글 보기 <IconArrowRight size={12} style={{ verticalAlign: -1 }} />
+                      </span>
+                    </div>
                   </div>
                 ))
               )}

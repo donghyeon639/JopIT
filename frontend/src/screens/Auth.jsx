@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   IconUser, IconLock, IconMail, IconGoogle, IconGithub, IconArrowRight,
   Logo
@@ -10,8 +10,10 @@ import { JOB_CATEGORIES } from "../constants/jobs.js";
 
 const Auth = ({ mode = "signup" }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { saveAuth } = useAuth();
   const isSignup = mode === "signup";
+  const redirectAfterLogin = location.state?.from || "/dashboard";
 
   const [selectedJob, setSelectedJob] = useState(0);
   const [form, setForm] = useState({ username: "", password: "", nickname: "" });
@@ -40,7 +42,7 @@ const Auth = ({ mode = "signup" }) => {
       }
       result = await apiLogin({ username: form.username, password: form.password });
       saveAuth(result);
-      navigate("/dashboard");
+      navigate(redirectAfterLogin, { replace: true });
     } catch (e) {
       setError(e.message);
     } finally {

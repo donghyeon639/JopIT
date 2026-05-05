@@ -159,6 +159,71 @@ npm run preview
 - 랭킹 시스템
 - 모의면접 타이머
 - 오답 노트
+- **AI 화상 면접** (§7 참고)
+- **직군별 채용 정보 외부 연동** — 현재 Dashboard는 mock(`getJobNews/getCompanyThemes`). 단계 계획: ① 관리자 큐레이션 → ② 네이버 검색 API(뉴스, 무료 일 25k) → ③ 사람인 OpenAPI(채용 공고). Caffeine 캐시 + jobCategory별 키 필수. 시크릿은 환경 변수.
+
+---
+
+## 7. AI 화상 면접 기능 기획 (2차 고도화)
+
+> 기획 단계. 착수 전 사용자 합의 필수. 1단계만으로도 포트폴리오 차원에서 충분히 임팩트 있음.
+
+### 7.1 컨셉
+사용자가 카메라/마이크를 켜고 AI 면접관과 실시간으로 음성 대화하며 모의 기술면접을 진행. 종료 시 전체 회차에 대한 종합 피드백 제공.
+
+### 7.2 컴포넌트 4단계 분해
+| 단계 | 역할 | 채택 후보 |
+| --- | --- | --- |
+| ① 입력 (사용자 → 텍스트) | 마이크 캡처 + STT | 브라우저 `getUserMedia` + Web Speech API (무료) → 추후 OpenAI Whisper API |
+| ② 추론 (텍스트 → 다음 질문/피드백) | LLM | 기존 Claude — 단, **Anthropic Java SDK + streaming** 으로 교체 필수 |
+| ③ 출력 (텍스트 → 음성) | TTS | 브라우저 `SpeechSynthesis` (무료) → 추후 ElevenLabs / OpenAI TTS |
+| ④ 영상 (선택) | AI 면접관 얼굴 | HeyGen / D-ID / Tavus Streaming Avatar (분당 과금) |
+
+### 7.3 단계별 로드맵
+
+**🟢 1단계 — "오디오 면접" MVP (현재 스택만으로 가능)**
+- 프런트: `getUserMedia` + Web Speech API로 마이크→텍스트
+- 백엔드: `POST /api/interview/turn` — 사용자 발화 + 세션ID를 받아 다음 질문 텍스트 반환
+- 응답 음성: 브라우저 `SpeechSynthesisUtterance`로 재생
+- 화면: 본인 카메라 self-view + AI 면접관 자리에 캐릭터/카드 UI
+- 추가 비용 ≈ 0, 추가 인프라 ≈ 0
+
+**🟡 2단계 — 품질 업그레이드**
+- STT를 Whisper API로 교체 (한국어 인식률 향상)
+- TTS를 ElevenLabs/OpenAI TTS로 교체 (자연스러운 음성)
+- `ClaudeCliService` → Anthropic Java SDK + streaming 으로 전환
+- WebSocket 도입 (`spring-boot-starter-websocket`) — 첫 음성이 1초 내 시작되도록 토큰 스트리밍
+- `interview_session` / `interview_turn` 테이블로 멀티턴 컨텍스트 누적
+
+**🔴 3단계 — 진짜 화상 면접 (아바타)**
+- HeyGen / D-ID / Tavus 등의 Streaming Avatar API 호출
+- AI 답변 텍스트 → 입모양 동기화된 영상 스트림
+- WebRTC로 프런트에 송출
+- 분당 과금 (대략 $0.1~0.5/min) — 비용 정책 사전 합의 필요
+
+### 7.4 현재 환경에서 미리 알아둘 제약
+1. **`ClaudeCliService`는 면접용 부적합** — 매 turn마다 `npx -y @anthropic-ai/claude-code` 콜드 스타트로 5~10초 지연, 스트리밍 불가. 화상 면접 착수 시점에 SDK 기반 `ClaudeApiService`로 교체 필요.
+2. **WebSocket / SSE 미도입** — 도입 시 `SecurityConfig`에 `/ws/**` 경로 인가 정책, JWT 핸드셰이크 처리 추가 필요.
+3. **세션 상태 저장소** — 회차당 다회 turn이라 대화 히스토리 위치 결정 필요. 1차는 PostgreSQL 단순 저장 권장 (Redis 미도입 상태).
+4. **음성 파일 보관** (선택) — "내 면접 다시 듣기"가 필요하면 S3 연동 필요.
+
+### 7.5 새 도메인 패키지 (착수 시)
+```
+com.main.prephub.interview
+├── InterviewSession.java        # 면접 회차 (사용자, 직군, 시작/종료 시각)
+├── InterviewTurn.java           # 회차 내 한 턴 (사용자 발화/AI 응답)
+├── InterviewSessionRepository.java
+├── InterviewTurnRepository.java
+├── InterviewService.java        # turn 처리 + Claude 호출
+├── InterviewController.java
+└── dto/
+```
+
+### 7.6 작업 순서 (착수 시)
+1. `ClaudeCliService` → `ClaudeApiService` 교체 (가장 먼저)
+2. `interview` 도메인 추가 (엔티티 + 단순 REST)
+3. 프런트 `Interview.jsx` 화면 (카메라 self-view + STT + TTS)
+4. 멀티턴 + 종료 시 종합 피드백 (기존 `AiFeedbackService` 로직 재사용)
 
 ---
 

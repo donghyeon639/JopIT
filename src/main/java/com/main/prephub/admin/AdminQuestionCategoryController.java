@@ -20,7 +20,7 @@ import java.util.UUID;
 public class AdminQuestionCategoryController {
 
     private final QuestionCategoryRepository questionCategoryRepository;
-
+    //문제 카테고리 조회
     @GetMapping
     public ResponseEntity<List<QuestionCategoryResponse>> list() {
         return ResponseEntity.ok(
@@ -29,7 +29,7 @@ public class AdminQuestionCategoryController {
                         .toList()
         );
     }
-
+    // 문제 카테고리 추가
     @PostMapping
     public ResponseEntity<QuestionCategoryResponse> create(@RequestBody @Valid QuestionCategoryRequest request) {
         if (questionCategoryRepository.findByName(request.getName()).isPresent()) {
@@ -39,6 +39,7 @@ public class AdminQuestionCategoryController {
         return ResponseEntity.status(HttpStatus.CREATED).body(QuestionCategoryResponse.from(saved));
     }
 
+    // 문제 카테고리 이름 수정
     @PutMapping("/{id}")
     @Transactional
     public ResponseEntity<QuestionCategoryResponse> update(@PathVariable UUID id, @RequestBody @Valid QuestionCategoryRequest request) {
@@ -53,6 +54,7 @@ public class AdminQuestionCategoryController {
         return ResponseEntity.ok(QuestionCategoryResponse.from(category));
     }
 
+    // 문제 카테고리 제거
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         questionCategoryRepository.deleteById(id);

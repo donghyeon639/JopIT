@@ -3,6 +3,7 @@ package com.main.prephub.answer;
 import com.main.prephub.aifeedback.AiFeedbackService;
 import com.main.prephub.answer.dto.AnswerCreateRequest;
 import com.main.prephub.answer.dto.AnswerResponse;
+import com.main.prephub.comment.CommentRepository;
 import com.main.prephub.question.Question;
 import com.main.prephub.question.QuestionRepository;
 import com.main.prephub.user.UserRepository;
@@ -21,6 +22,7 @@ public class AnswerService {
     private final AnswerRepository answerRepository;
     private final QuestionRepository questionRepository;
     private final UserRepository userRepository;
+    private final CommentRepository commentRepository;
     private final AiFeedbackService aiFeedbackService;
 
     @Transactional
@@ -42,13 +44,24 @@ public class AnswerService {
 
     @Transactional(readOnly = true)
     public AnswerResponse getById(UUID answerId) {
-        return AnswerResponse.from(findAnswer(answerId));
+        Answer answer = findAnswer(answerId);
+        return AnswerResponse.from(answer, commentRepository.countByAnswerId(answer.getId()));
     }
 
     @Transactional(readOnly = true)
     public List<AnswerResponse> getByQuestion(UUID questionId) {
         return answerRepository.findByQuestionIdOrderByCreatedAtDesc(questionId)
-                .stream().map(AnswerResponse::from).toList();
+                .stream()
+                .map(a -> AnswerResponse.from(a, commentRepository.countByAnswerId(a.getId())))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<AnswerResponse> getCommunityFeed() {
+        return answerRepository.findAllByOrderByCreatedAtDesc()
+                .stream()
+                .map(a -> AnswerResponse.from(a, commentRepository.countByAnswerId(a.getId())))
+                .toList();
     }
 
     @Transactional(readOnly = true)
@@ -56,7 +69,9 @@ public class AnswerService {
         Users user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
         return answerRepository.findByUserIdOrderByCreatedAtDesc(user.getId())
-                .stream().map(AnswerResponse::from).toList();
+                .stream()
+                .map(a -> AnswerResponse.from(a, commentRepository.countByAnswerId(a.getId())))
+                .toList();
     }
 
     @Transactional

@@ -15,4 +15,5 @@ public class TokenResponse {
     private String nickname;
     private String username;
     private Role role;
+    private String jobCategoryName;
 }

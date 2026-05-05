@@ -24,8 +24,13 @@ public class AnswerResponse {
     private String aiFeedback;
     private FeedbackStatus feedbackStatus;
     private LocalDateTime createdAt;
+    private Long commentCount;
 
     public static AnswerResponse from(Answer a) {
+        return from(a, null);
+    }
+
+    public static AnswerResponse from(Answer a, Long commentCount) {
         return AnswerResponse.builder()
                 .id(a.getId())
                 .questionId(a.getQuestion().getId())
@@ -35,6 +40,7 @@ public class AnswerResponse {
                 .aiFeedback(a.getAiFeedback())
                 .feedbackStatus(a.getFeedbackStatus())
                 .createdAt(a.getCreatedAt())
+                .commentCount(commentCount)
                 .build();
     }
 }

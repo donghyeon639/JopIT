@@ -39,6 +39,11 @@ public class AnswerController {
         return ResponseEntity.ok(answerService.getById(answerId));
     }
 
+    @GetMapping("/answers")
+    public ResponseEntity<List<AnswerResponse>> communityFeed() {
+        return ResponseEntity.ok(answerService.getCommunityFeed());
+    }
+
     @GetMapping("/answers/me")
     public ResponseEntity<List<AnswerResponse>> myAnswers(
             @AuthenticationPrincipal UserDetails userDetails) {

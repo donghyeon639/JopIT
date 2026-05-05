@@ -57,6 +57,7 @@ public class AuthService {
                 .nickname(user.getNickname())
                 .username(user.getUsername())
                 .role(user.getRole())
+                .jobCategoryName(user.getJobCategory() != null ? user.getJobCategory().getName() : null)
                 .build();
     }
 
@@ -77,6 +78,7 @@ public class AuthService {
                 .nickname(user.getNickname())
                 .username(user.getUsername())
                 .role(user.getRole())
+                .jobCategoryName(user.getJobCategory() != null ? user.getJobCategory().getName() : null)
                 .build();
     }
 }

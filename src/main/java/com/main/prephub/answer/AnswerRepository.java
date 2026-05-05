@@ -10,4 +10,6 @@ public interface AnswerRepository extends JpaRepository<Answer, UUID> {
     List<Answer> findByQuestionIdOrderByCreatedAtDesc(UUID questionId);
 
     List<Answer> findByUserIdOrderByCreatedAtDesc(UUID userId);
+
+    List<Answer> findAllByOrderByCreatedAtDesc();
 }

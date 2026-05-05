@@ -10,6 +10,16 @@ export const questionApi = {
   myAnswers:       ()                    => http.get(`/answers/me`),
 };
 
+export const communityApi = {
+  feed: () => http.get(`/answers`),
+};
+
+export const commentApi = {
+  list:   (answerId)          => http.get(`/answers/${answerId}/comments`),
+  create: (answerId, content) => http.post(`/answers/${answerId}/comments`, { content }),
+  delete: (commentId)         => http.delete(`/comments/${commentId}`),
+};
+
 export const categoryApi = {
   list: () => http.get("/categories"),
 };

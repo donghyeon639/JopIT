@@ -8,7 +8,8 @@ export function AuthProvider({ children }) {
     const nickname = sessionStorage.getItem("nickname");
     const username = sessionStorage.getItem("username");
     const role = sessionStorage.getItem("role");
-    return token ? { accessToken: token, nickname, username, role } : null;
+    const jobCategoryName = sessionStorage.getItem("jobCategoryName");
+    return token ? { accessToken: token, nickname, username, role, jobCategoryName } : null;
   });
 
   const saveAuth = useCallback((tokenResponse) => {
@@ -16,11 +17,17 @@ export function AuthProvider({ children }) {
     sessionStorage.setItem("nickname", tokenResponse.nickname);
     sessionStorage.setItem("username", tokenResponse.username);
     sessionStorage.setItem("role", tokenResponse.role ?? "USER");
+    if (tokenResponse.jobCategoryName) {
+      sessionStorage.setItem("jobCategoryName", tokenResponse.jobCategoryName);
+    } else {
+      sessionStorage.removeItem("jobCategoryName");
+    }
     setAuth({
       accessToken: tokenResponse.accessToken,
       nickname: tokenResponse.nickname,
       username: tokenResponse.username,
       role: tokenResponse.role ?? "USER",
+      jobCategoryName: tokenResponse.jobCategoryName ?? null,
     });
   }, []);
 
