@@ -1,0 +1,42 @@
+package com.main.jobit.user.dto;
+
+import com.main.jobit.user.Role;
+import com.main.jobit.user.Users;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+@Getter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class UserResponse {
+
+    private UUID id;
+    private String username;
+    private String nickname;
+    private Role role;
+    private UUID jobCategoryId;
+    private String jobCategoryName;
+    private UUID jobDetailId;
+    private String jobDetailName;
+    private LocalDateTime createdAt;
+
+    public static UserResponse from(Users user) {
+        return UserResponse.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .nickname(user.getNickname())
+                .role(user.getRole())
+                .jobCategoryId(user.getJobCategory().getId())
+                .jobCategoryName(user.getJobCategory().getName())
+                .jobDetailId(user.getJobDetail() != null ? user.getJobDetail().getId() : null)
+                .jobDetailName(user.getJobDetail() != null ? user.getJobDetail().getName() : null)
+                .createdAt(user.getCreatedAt())
+                .build();
+    }
+}

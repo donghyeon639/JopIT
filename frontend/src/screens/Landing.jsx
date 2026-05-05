@@ -215,7 +215,7 @@ const Footer = () =>
     <div style={{ maxWidth: 1280, margin: "0 auto", display: "flex",
       justifyContent: "space-between", alignItems: "center" }}>
       <Logo />
-      <div style={{ fontSize: 13, color: "#7B8290" }}>© 2026 PrepNote · 개발자를 위한 면접 준비 플랫폼</div>
+      <div style={{ fontSize: 13, color: "#7B8290" }}>© 2026 JobIT · 개발자를 위한 면접 준비 플랫폼</div>
     </div>
   </footer>;
 

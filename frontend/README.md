@@ -1,6 +1,6 @@
-# DevPrep — React App
+# JobIT — React App
 
-Vite + React 18로 변환된 DevPrep 프로토타입.
+Vite + React 18로 변환된 JobIT 프로토타입.
 
 ## 실행
 

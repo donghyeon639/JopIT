@@ -6,7 +6,7 @@ plugins {
 
 group = 'com.main'
 version = '0.0.1-SNAPSHOT'
-description = 'prephub'
+description = 'JobIT'
 
 java {
     toolchain {

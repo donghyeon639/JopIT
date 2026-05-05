@@ -1,6 +1,6 @@
 import React from "react";
 
-// DevPrep AI 캐릭터 — "프렙(Prep)" 선생님 로봇
+// JobIT AI 캐릭터 — "프렙(Prep)" 선생님 로봇
 // 2등신 비율 (머리:몸 = 1:1), 귀엽고 친근한 톤
 // expression: happy | thinking | celebrate | wave | teach | sleep
 // size: 픽셀 크기

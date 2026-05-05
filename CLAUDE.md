@@ -1,12 +1,15 @@
-# CLAUDE.md — DevPrep (prepnote)
+# CLAUDE.md — JobIT
 
 이 저장소에서 코드를 작성·수정·리뷰하기 전에 반드시 이 문서를 먼저 읽으세요.
+
+> **엔지니어링 원칙은 [`docs/ENGINEERING_PRIORITIES.md`](docs/ENGINEERING_PRIORITIES.md)에 정리되어 있습니다.**
+> DB·캐시·비동기 AI·CI/CD·계층 분리 등 사용자가 중요하게 보는 관점입니다. 해당 영역에 손대기 전에 반드시 같이 읽어야 합니다.
 
 ---
 
 ## 1. 프로젝트 한 줄 요약
 
-**직군별 면접·채용 준비 플랫폼.** 1차 타겟은 백엔드/프런트엔드/데이터 직군 개발자 취준생이며, 추후 마케팅·디자인 등 비개발 직군까지 확장할 계획입니다. 차별점은 **AI 답변 피드백 + 직군별 맞춤 문제 + 커뮤니티**.
+**JobIT — 직군별 면접·채용 준비 플랫폼.** 1차 타겟은 백엔드/프런트엔드/데이터 직군 개발자 취준생이며, 추후 마케팅·디자인 등 비개발 직군까지 확장할 계획입니다. 차별점은 **AI 답변 피드백 + 직군별 맞춤 문제 + 커뮤니티**.
 
 > 우선순위: **개발 직군 기능을 먼저 완성** → 그다음 비개발 직군 확장. 현재 작업은 모두 개발 직군 기준으로 판단합니다.
 
@@ -15,12 +18,16 @@
 ## 2. 저장소 레이아웃
 
 ```
-C:\prepnote\
-├── prepnote-main-service\    # 백엔드 (Spring Boot)
-└── prepnote-frontend\         # 프런트엔드 (React + Vite)
+C:\JobIT\JobIT\
+├── src\                  # 백엔드 (Spring Boot, Java 21)
+├── frontend\             # 프런트엔드 (React 18 + Vite)
+├── build.gradle
+├── settings.gradle       # rootProject.name = 'JobIT'
+└── docs\
+    └── ENGINEERING_PRIORITIES.md
 ```
 
-두 서비스는 **모노레포 형태로 한 디렉토리에 공존**하지만 별도 빌드 단위입니다. 한쪽을 변경할 때 다른 쪽 API 계약(엔드포인트, 응답 스키마)에 영향이 가는지 항상 확인하세요.
+백엔드와 프런트엔드는 **하나의 디렉토리에 공존**하지만 별도 빌드 단위입니다. 한쪽을 변경할 때 다른 쪽 API 계약(엔드포인트, 응답 스키마)에 영향이 가는지 항상 확인하세요.
 
 ---
 
@@ -28,7 +35,7 @@ C:\prepnote\
 
 기획 문서에는 Python/FastAPI로 적혀 있으나 **실제 백엔드는 Spring Boot입니다.** 코드를 작성할 때는 항상 아래 실제 스택을 기준으로 하세요.
 
-### 3.1 백엔드 (`prepnote-main-service`)
+### 3.1 백엔드 (`C:\JobIT\JobIT\`)
 | 항목 | 값 |
 | --- | --- |
 | 언어/런타임 | Java 21 (toolchain 고정) |
@@ -41,14 +48,14 @@ C:\prepnote\
 | 웹 | Spring Web MVC |
 | 보일러플레이트 | Lombok (compileOnly + annotationProcessor) |
 | 테스트 | JUnit 5 (`useJUnitPlatform()`), `*-test` 스타터 |
-| 패키지 루트 | `com.prepnote.main_service` |
-| 엔트리 | `MainServiceApplication.java` |
+| 패키지 루트 | `com.main.jobit` |
+| 엔트리 | `JobitApplication.java` |
 
 **실행 명령어 (백엔드):**
 
 ```bash
 # 디렉토리 이동
-cd C:\prepnote\prepnote-main-service
+cd C:\JobIT\JobIT
 
 # 개발 서버 실행 (기본 포트 8080)
 ./gradlew bootRun
@@ -58,11 +65,11 @@ gradlew.bat bootRun
 # 테스트
 ./gradlew test
 
-# 프로덕션 빌드 (build/libs/*.jar 생성)
+# 프로덕션 빌드 (build/libs/JobIT-0.0.1-SNAPSHOT.jar 생성)
 ./gradlew build
 
 # 빌드된 jar 직접 실행
-java -jar build/libs/main-service-0.0.1-SNAPSHOT.jar
+java -jar build/libs/JobIT-0.0.1-SNAPSHOT.jar
 
 # 클린 빌드
 ./gradlew clean build
@@ -71,7 +78,7 @@ java -jar build/libs/main-service-0.0.1-SNAPSHOT.jar
 > Bash 셸(Git Bash, WSL 등)에서는 `./gradlew`, Windows 네이티브 셸에서는 `gradlew.bat`을 사용하세요.
 > 첫 실행 시 Gradle/JDK 21 toolchain을 자동 다운로드하므로 시간이 걸릴 수 있습니다.
 
-### 3.2 프런트엔드 (`prepnote-frontend`)
+### 3.2 프런트엔드 (`C:\JobIT\JobIT\frontend\`)
 | 항목 | 값 |
 | --- | --- |
 | 프레임워크 | React 18.3 |
@@ -87,7 +94,7 @@ java -jar build/libs/main-service-0.0.1-SNAPSHOT.jar
 
 ```bash
 # 디렉토리 이동
-cd C:\prephub\frontend
+cd C:\JobIT\JobIT\frontend
 
 # 의존성 설치 (최초 1회 또는 package.json 변경 시)
 npm install
@@ -117,8 +124,8 @@ npm run preview
 - Java 21 기능(record, sealed, pattern matching, virtual threads 등)을 자유롭게 사용해도 됩니다.
 
 ### 4.2 아키텍처
-- 현재는 **모놀리식 단일 서비스**(`prepnote-main-service`)로 시작합니다. 기획서의 MSA 분리도(유저/문제/답변/알림/AI)는 **트래픽이 늘었을 때의 미래 계획**이며, 지금은 패키지 분리 수준으로 충분합니다.
-- 도메인을 패키지로 나눌 때는 `com.prepnote.main_service.<domain>` (예: `user`, `question`, `answer`, `notification`, `aifeedback`) 형태를 권장합니다. 새 패턴을 도입하기 전에 기존 코드를 확인하세요.
+- 현재는 **모놀리식 단일 서비스**(`JobIT`)로 시작합니다. 기획서의 MSA 분리도(유저/문제/답변/알림/AI)는 **트래픽이 늘었을 때의 미래 계획**이며, 지금은 패키지 분리 수준으로 충분합니다.
+- 도메인을 패키지로 나눌 때는 `com.main.jobit.<domain>` (예: `user`, `question`, `answer`, `notification`, `aifeedback`) 형태를 권장합니다. 새 패턴을 도입하기 전에 기존 코드를 확인하세요.
 - AI 피드백 기능은 **2차 고도화 범위**입니다. MVP 작업 중이라면 이 부분에 손대기 전에 확인.
 
 ### 4.3 데이터/인프라
@@ -135,6 +142,7 @@ npm run preview
 - 스타일링 방식은 `src/styles/`에 있는 기존 파일을 먼저 보고 그에 맞춥니다. 새 스타일 라이브러리(Tailwind, MUI 등)를 임의 도입 금지.
 - API 호출 레이어가 아직 표준화되어 있지 않을 수 있습니다. fetch 래퍼/axios 도입을 결정하기 전 사용자와 합의.
 - 화면 구성은 `screens/`에 한 파일로 두고, 재사용 단위만 `components/`로 분리하는 현재 컨벤션을 유지하세요.
+- 마스코트/캐릭터 식별자(`PrepBot`, `PrepCoach`, "프렙쌤")는 브랜드 리네임(JobIT)과 별개로 **현재 그대로 유지**되고 있습니다. 변경 시 사용자와 합의.
 
 ### 4.6 일반
 - 한국어 응답을 기본으로. 코드 내 식별자는 영어, 주석/문서는 필요 시 한국어 OK.
@@ -161,6 +169,17 @@ npm run preview
 - 오답 노트
 - **AI 화상 면접** (§7 참고)
 - **직군별 채용 정보 외부 연동** — 현재 Dashboard는 mock(`getJobNews/getCompanyThemes`). 단계 계획: ① 관리자 큐레이션 → ② 네이버 검색 API(뉴스, 무료 일 25k) → ③ 사람인 OpenAPI(채용 공고). Caffeine 캐시 + jobCategory별 키 필수. 시크릿은 환경 변수.
+
+---
+
+## 6. 작업 시작 전 체크리스트
+- [ ] application.properties, .env와 같은 설정 파일을 git에 commit에 하지말것
+- [ ] 변경 대상이 백엔드인지 프런트인지 확인 (두 개의 별도 빌드 단위)
+- [ ] 기존 패키지/폴더 구조와 컨벤션을 먼저 읽었는가
+- [ ] MVP 범위인가, 고도화 범위인가
+- [ ] 새 의존성/라이브러리/추상화를 도입하려 한다면 사용자에게 먼저 확인했는가
+- [ ] 비밀값을 코드에 박지 않았는가
+- [ ] 백엔드 변경이 프런트 API 계약에 영향을 주는가 (또는 그 반대)
 
 ---
 
@@ -209,7 +228,7 @@ npm run preview
 
 ### 7.5 새 도메인 패키지 (착수 시)
 ```
-com.main.prephub.interview
+com.main.jobit.interview
 ├── InterviewSession.java        # 면접 회차 (사용자, 직군, 시작/종료 시각)
 ├── InterviewTurn.java           # 회차 내 한 턴 (사용자 발화/AI 응답)
 ├── InterviewSessionRepository.java
@@ -224,14 +243,3 @@ com.main.prephub.interview
 2. `interview` 도메인 추가 (엔티티 + 단순 REST)
 3. 프런트 `Interview.jsx` 화면 (카메라 self-view + STT + TTS)
 4. 멀티턴 + 종료 시 종합 피드백 (기존 `AiFeedbackService` 로직 재사용)
-
----
-
-## 6. 작업 시작 전 체크리스트
-- [ ] application.properties, .env와 같은 설정 파일을 git에 commit에 하지말것
-- [ ] 변경 대상이 백엔드인지 프런트인지 확인 (두 개의 별도 빌드 단위)
-- [ ] 기존 패키지/폴더 구조와 컨벤션을 먼저 읽었는가
-- [ ] MVP 범위인가, 고도화 범위인가
-- [ ] 새 의존성/라이브러리/추상화를 도입하려 한다면 사용자에게 먼저 확인했는가
-- [ ] 비밀값을 코드에 박지 않았는가
-- [ ] 백엔드 변경이 프런트 API 계약에 영향을 주는가 (또는 그 반대)
