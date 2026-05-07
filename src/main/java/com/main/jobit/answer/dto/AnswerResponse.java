@@ -2,6 +2,7 @@ package com.main.jobit.answer.dto;
 
 import com.main.jobit.answer.Answer;
 import com.main.jobit.answer.FeedbackStatus;
+import com.main.jobit.question.Difficulty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,6 +20,8 @@ public class AnswerResponse {
     private UUID id;
     private UUID questionId;
     private String questionTitle;
+    private String questionCategoryName;
+    private Difficulty questionDifficulty;
     private String authorNickname;
     private String content;
     private String aiFeedback;
@@ -35,6 +38,8 @@ public class AnswerResponse {
                 .id(a.getId())
                 .questionId(a.getQuestion().getId())
                 .questionTitle(a.getQuestion().getTitle())
+                .questionCategoryName(a.getQuestion().getQuestionCategory().getName())
+                .questionDifficulty(a.getQuestion().getDifficulty())
                 .authorNickname(a.getUser().getNickname())
                 .content(a.getContent())
                 .aiFeedback(a.getAiFeedback())

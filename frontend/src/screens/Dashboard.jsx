@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   IconSpark, IconList, IconSearch, IconUser, IconHeart, IconBookmark,
@@ -7,6 +7,7 @@ import {
 } from "../components/Components.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { getJobNews, getCompanyThemes } from "../data/mockData.js";
+import { meApi } from "../api/questionApi.js";
 
 /* ──────────────────────────────────────────────
  *  Wanted 스타일 메뉴 아이콘 — 부드러운 컬러 + 일러스트 톤
@@ -177,12 +178,17 @@ const Dashboard = () => {
   const jobNews = getJobNews(jobCategoryName);
   const companyThemes = getCompanyThemes(jobCategoryName);
 
+  const [stats, setStats] = useState(null);
+  useEffect(() => {
+    meApi.stats().then(setStats).catch(() => {});
+  }, []);
+
   const tiles = [
     { icon: <Layered />,    label: "문제 풀기",     onClick: () => navigate("/questions") },
-    { icon: <Document accent="#FFB800" />, label: "AI 첨삭", onClick: () => navigate("/questions") },
-    { icon: <PaperStack />, label: "내 답변",       onClick: () => navigate("/questions") },
+    { icon: <Document accent="#FFB800" />, label: "이력서 첨삭", onClick: () => navigate("/resume") },
+    { icon: <PaperStack />, label: "내 답변",       onClick: () => navigate("/my/answers") },
     { icon: <Target />,     label: "레벨 체크",     onClick: () => navigate("/levelcheck") },
-    { icon: <Donut />,      label: "학습 현황",     onClick: () => navigate("/dashboard") },
+    { icon: <Donut />,      label: "학습 현황",     onClick: () => navigate("/my/status") },
     { icon: <ChatBubble />, label: "커뮤니티",      onClick: () => navigate("/community") },
     { icon: <Headphones />, label: "AI 면접 코칭",  badge: "N" },
     { icon: <Folder />,     label: "즐겨찾기" },
@@ -326,25 +332,64 @@ const Dashboard = () => {
             padding: 28, background: "#fff",
             border: "1px solid #ECEEF2", borderRadius: 16
           }}>
-            <div style={{ fontSize: 13, color: "#7B8290", fontWeight: 600, marginBottom: 10 }}>
-              📚 최근 학습
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+              <div style={{ fontSize: 13, color: "#7B8290", fontWeight: 600 }}>
+                📚 최근 학습
+              </div>
+              {stats && stats.totalAnswers > 0 && (
+                <span onClick={() => navigate("/my/status")}
+                  style={{ fontSize: 12, color: "#4A7BF7", fontWeight: 600, cursor: "pointer" }}>
+                  학습 현황
+                </span>
+              )}
             </div>
-            <div style={{ fontSize: 18, fontWeight: 600, color: "#1A1F2E", marginBottom: 6 }}>
-              아직 풀던 문제가 없어요
-            </div>
-            <div style={{ fontSize: 14, color: "#7B8290", marginBottom: 18 }}>
-              첫 문제를 풀어보면 여기에 이어가기가 표시돼요.
-            </div>
-            <button onClick={() => navigate("/questions")}
-              style={{
-                padding: "10px 18px", fontSize: 14, fontWeight: 600,
-                background: "#1A1F2E", color: "#fff",
-                border: "none", borderRadius: 8, cursor: "pointer",
-                fontFamily: "inherit",
-                display: "inline-flex", alignItems: "center", gap: 6
-              }}>
-              문제 보러가기 <IconArrowRight size={14} />
-            </button>
+            {stats && stats.latestAnswer ? (
+              <>
+                <div style={{ fontSize: 13, color: "#7B8290", marginBottom: 6 }}>
+                  마지막으로 푼 문제
+                </div>
+                <div style={{
+                  fontSize: 17, fontWeight: 600, color: "#1A1F2E", marginBottom: 6,
+                  overflow: "hidden", textOverflow: "ellipsis",
+                  display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical"
+                }}>
+                  {stats.latestAnswer.questionTitle}
+                </div>
+                <div style={{ fontSize: 13, color: "#7B8290", marginBottom: 18 }}>
+                  지금까지 답변 {stats.totalAnswers}개
+                  {stats.currentStreakDays > 0 && ` · 연속 ${stats.currentStreakDays}일`}
+                </div>
+                <button onClick={() => navigate(`/answer?id=${stats.latestAnswer.answerId}`)}
+                  style={{
+                    padding: "10px 18px", fontSize: 14, fontWeight: 600,
+                    background: "#1A1F2E", color: "#fff",
+                    border: "none", borderRadius: 8, cursor: "pointer",
+                    fontFamily: "inherit",
+                    display: "inline-flex", alignItems: "center", gap: 6
+                  }}>
+                  이어서 보기 <IconArrowRight size={14} />
+                </button>
+              </>
+            ) : (
+              <>
+                <div style={{ fontSize: 18, fontWeight: 600, color: "#1A1F2E", marginBottom: 6 }}>
+                  아직 풀던 문제가 없어요
+                </div>
+                <div style={{ fontSize: 14, color: "#7B8290", marginBottom: 18 }}>
+                  첫 문제를 풀어보면 여기에 이어가기가 표시돼요.
+                </div>
+                <button onClick={() => navigate("/questions")}
+                  style={{
+                    padding: "10px 18px", fontSize: 14, fontWeight: 600,
+                    background: "#1A1F2E", color: "#fff",
+                    border: "none", borderRadius: 8, cursor: "pointer",
+                    fontFamily: "inherit",
+                    display: "inline-flex", alignItems: "center", gap: 6
+                  }}>
+                  문제 보러가기 <IconArrowRight size={14} />
+                </button>
+              </>
+            )}
           </div>
 
           {/* 커뮤니티 미리보기 */}

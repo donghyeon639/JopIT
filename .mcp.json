@@ -1,0 +1,21 @@
+{
+  "mcpServers": {
+    "github-issue-manager": {
+      "command": "node",
+      "args": ["C:/prephub/prephub/github-mcp/server.js"],
+      "env": {
+        "GITHUB_TOKEN": "${GITHUB_TOKEN}",
+        "GITHUB_OWNER": "${GITHUB_OWNER}",
+        "GITHUB_REPO": "${GITHUB_REPO}"
+      }
+    }
+  }
+}
+
+# 이슈 전체 생성 스크립트 실행
+node -e "
+import('./issues-data.js').then(async ({ issuesData }) => {
+  const { default: axios } = await import('axios');
+  // ... (server.js의 create_project_issues 로직과 동일)
+})
+"

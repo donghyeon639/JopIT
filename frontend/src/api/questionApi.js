@@ -23,3 +23,7 @@ export const commentApi = {
 export const categoryApi = {
   list: () => http.get("/categories"),
 };
+
+export const meApi = {
+  stats: () => http.get("/me/stats"),
+};
