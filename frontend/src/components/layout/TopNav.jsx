@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext.jsx";
 import Logo from "../common/Logo.jsx";
@@ -11,17 +11,49 @@ const NAV_LINKS = [
   { label: "면접 후기", path: "/reviews"   },
 ];
 
+const MenuItem = ({ label, onClick, danger }) => (
+  <div
+    onClick={onClick}
+    style={{
+      padding: "9px 16px",
+      fontSize: 13,
+      fontWeight: 500,
+      color: danger ? "#DC2626" : "#3D434C",
+      cursor: "pointer",
+      transition: "background 0.12s",
+    }}
+    onMouseEnter={e => e.currentTarget.style.background = danger ? "#FEF2F2" : "#F7F9FF"}
+    onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+  >
+    {label}
+  </div>
+);
+
 const TopNav = () => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { isLoggedIn, isAdmin, auth, logout } = useAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
 
   const isActive = (path) => {
     if (path === "/questions") return ["/questions", "/solve", "/feedback"].includes(pathname);
     return pathname === path;
   };
 
-  const avatarLetter = auth?.nickname ? auth.nickname[0] : "?";
+  const avatarLetter = auth?.nickname ? auth.nickname[0].toUpperCase() : "?";
+
+  // 드롭다운 바깥 클릭 시 닫기
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handler = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [menuOpen]);
 
   return (
     <div className="dp-nav">
@@ -50,6 +82,7 @@ const TopNav = () => {
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         {isLoggedIn ? (
           <>
+            {/* 검색바 */}
             <div style={{
               display: "flex", alignItems: "center", gap: 8,
               padding: "8px 12px", background: "var(--gray-50)",
@@ -62,16 +95,65 @@ const TopNav = () => {
                 background: "#fff", border: "1px solid var(--gray-200)",
                 borderRadius: 4, fontFamily: "var(--font-mono)" }}>⌘K</span>
             </div>
+
+            {/* 알림 */}
             <div style={{ width: 36, height: 36, borderRadius: 999,
               background: "var(--gray-100)", display: "flex",
               alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
               <IconBell size={18} />
             </div>
-            <div className="avatar"
-                 style={{ background: "linear-gradient(135deg, #3B82F6, #1D4ED8)", cursor: "pointer" }}
-                 title={auth?.nickname}
-                 onClick={logout}>
-              {avatarLetter}
+
+            {/* 아바타 + 드롭다운 */}
+            <div ref={menuRef} style={{ position: "relative" }}>
+              <div
+                className="avatar"
+                style={{
+                  background: "linear-gradient(135deg, #3B82F6, #1D4ED8)",
+                  cursor: "pointer",
+                  outline: menuOpen ? "2px solid #93C5FD" : "none",
+                  outlineOffset: 2,
+                }}
+                onClick={() => setMenuOpen(prev => !prev)}
+              >
+                {avatarLetter}
+              </div>
+
+              {menuOpen && (
+                <div style={{
+                  position: "absolute", top: "calc(100% + 8px)", right: 0,
+                  width: 200,
+                  background: "#fff",
+                  border: "1px solid #ECEEF2",
+                  borderRadius: 12,
+                  boxShadow: "0 8px 24px rgba(0,0,0,0.10)",
+                  overflow: "hidden",
+                  zIndex: 1000,
+                }}>
+                  {/* 프로필 헤더 */}
+                  <div style={{ padding: "14px 16px", borderBottom: "1px solid #F3F4F6" }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "#1A1F2E" }}>
+                      {auth?.nickname}
+                    </div>
+                    <div style={{ fontSize: 12, color: "#9BA3B2", marginTop: 2 }}>
+                      {auth?.jobCategoryName ? `${auth.jobCategoryName} 개발자` : "직군 미설정"}
+                    </div>
+                  </div>
+
+                  {/* 메뉴 항목 */}
+                  <div style={{ padding: "6px 0" }}>
+                    <MenuItem label="내 답변" onClick={() => { navigate("/my/answers"); setMenuOpen(false); }} />
+                    <MenuItem label="학습 현황" onClick={() => { navigate("/my/status"); setMenuOpen(false); }} />
+                  </div>
+
+                  <div style={{ borderTop: "1px solid #F3F4F6", padding: "6px 0" }}>
+                    <MenuItem
+                      label="로그아웃"
+                      danger
+                      onClick={() => { logout(); setMenuOpen(false); navigate("/"); }}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </>
         ) : (

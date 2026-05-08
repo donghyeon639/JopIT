@@ -6,115 +6,120 @@ import {
   TopNav, DifficultyBadge, CategoryBadge
 } from "../components/Components.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
-import { getJobNews, getCompanyThemes } from "../data/mockData.js";
-import { meApi } from "../api/questionApi.js";
+import { getJobNews, getCompanyThemes, getTechTrends } from "../data/mockData.js";
+import { meApi, techTrendApi } from "../api/questionApi.js";
 
 /* ──────────────────────────────────────────────
- *  Wanted 스타일 메뉴 아이콘 — 부드러운 컬러 + 일러스트 톤
- *  채도를 낮춘 파스텔 컬러 + 단순한 SVG 도형으로 구성
+ *  앱 아이콘 스타일 — 솔리드 컬러 배경 + 흰색 아이콘
+ *  iOS 앱 아이콘 / Notion·Linear 계열 느낌
  * ──────────────────────────────────────────────*/
 
-const TileIcon = ({ children }) => (
+const TileIcon = ({ children, bg = "#3B6AE8" }) => (
   <div style={{
-    width: 64, height: 64, borderRadius: 16,
+    width: 56, height: 56, borderRadius: 16,
+    background: bg,
     display: "flex", alignItems: "center", justifyContent: "center",
-    marginBottom: 8, flexShrink: 0
+    marginBottom: 8, flexShrink: 0,
+    transition: "transform 0.18s ease",
+    boxShadow: `0 4px 14px ${bg}55`
   }}>
     {children}
   </div>
 );
 
-const Layered = () => (
-  /* 채용공고 풍 — 쌓인 카드 */
-  <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-    <path d="M24 6L40 14L24 22L8 14L24 6Z" fill="#7BAEF7" />
-    <path d="M8 22L24 30L40 22L40 26L24 34L8 26L8 22Z" fill="#4A7BF7" />
-    <path d="M8 30L24 38L40 30L40 34L24 42L8 34L8 30Z" fill="#3B66E0" />
+/* 문제 풀기 — 번개 (도전·에너지) */
+const QuizIcon = () => (
+  <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+    <path d="M15 2L5 15H12L11 24L21 11H14L15 2Z" fill="#fff" fillRule="evenodd"/>
   </svg>
 );
 
-const Document = ({ accent = "#FFB800" }) => (
-  /* 문서/노트 */
-  <svg width="44" height="48" viewBox="0 0 44 48" fill="none">
-    <path d="M6 4H28L38 14V42C38 43.1 37.1 44 36 44H6C4.9 44 4 43.1 4 42V6C4 4.9 4.9 4 6 4Z" fill="#E8F0FE"/>
-    <path d="M28 4V14H38L28 4Z" fill="#C7DCFC"/>
-    <circle cx="32" cy="10" r="6" fill={accent}/>
-    <path d="M30 10L32 12L34 8" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+/* 이력서 첨삭 — 펜 + 별 (AI 첨삭) */
+const ResumeIcon = () => (
+  <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+    <path d="M4 19.5L14.5 9L17 11.5L6.5 22H4V19.5Z" fill="#fff"/>
+    <path d="M17 4L18.2 7.2L21.5 8.5L18.2 9.8L17 13L15.8 9.8L12.5 8.5L15.8 7.2L17 4Z" fill="#fff" opacity="0.9"/>
   </svg>
 );
 
-const PaperStack = () => (
-  /* 문서 관리 */
-  <svg width="44" height="48" viewBox="0 0 44 48" fill="none">
-    <rect x="10" y="8" width="26" height="34" rx="3" fill="#C7DCFC"/>
-    <rect x="6" y="12" width="26" height="32" rx="3" fill="#7BAEF7"/>
-    <rect x="11" y="20" width="16" height="2" rx="1" fill="#fff"/>
-    <rect x="11" y="26" width="13" height="2" rx="1" fill="#fff"/>
-    <rect x="11" y="32" width="10" height="2" rx="1" fill="#fff"/>
+/* 내 답변 — 클립보드 체크 */
+const AnswerIcon = () => (
+  <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+    <rect x="5" y="6" width="16" height="18" rx="3" fill="rgba(255,255,255,0.2)" stroke="#fff" strokeWidth="1.5"/>
+    <path d="M10 4H16C16 5.1 15.1 6 14 6H12C10.9 6 10 5.1 10 4Z" fill="#fff"/>
+    <path d="M9 15L12 18L17 12" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
   </svg>
 );
 
-const Target = () => (
-  /* 커리어 조회 — 과녁 */
-  <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-    <circle cx="24" cy="24" r="20" stroke="#FB923C" strokeWidth="3"/>
-    <circle cx="24" cy="24" r="13" stroke="#FB923C" strokeWidth="3"/>
-    <circle cx="24" cy="24" r="6" fill="#FB923C"/>
+/* 레벨 체크 — 트로피 */
+const LevelIcon = () => (
+  <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+    <path d="M9 3H17V14C17 16.8 15.2 18 13 18C10.8 18 9 16.8 9 14V3Z" fill="#fff"/>
+    <path d="M5 5H9V10C6.8 10 5 8.2 5 6V5Z" fill="rgba(255,255,255,0.65)"/>
+    <path d="M17 5H21V6C21 8.2 19.2 10 17 10V5Z" fill="rgba(255,255,255,0.65)"/>
+    <rect x="10.5" y="18" width="5" height="1.5" rx="0.75" fill="#fff"/>
+    <rect x="8" y="19.5" width="10" height="2" rx="1" fill="#fff"/>
   </svg>
 );
 
-const Donut = () => (
-  /* 진행 상황 — 도넛 차트 */
-  <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-    <circle cx="24" cy="24" r="16" stroke="#FFE3B0" strokeWidth="6"/>
-    <path d="M24 8 A16 16 0 0 1 40 24" stroke="#FFB800" strokeWidth="6" strokeLinecap="round" fill="none"/>
-    <path d="M40 24 A16 16 0 0 1 30 38" stroke="#F66" strokeWidth="6" strokeLinecap="round" fill="none"/>
+/* 학습 현황 — 로켓 */
+const RocketIcon = () => (
+  <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+    <path d="M13 2C13 2 20 5.5 20 13C20 17 17.2 19.5 13 21C8.8 19.5 6 17 6 13C6 5.5 13 2 13 2Z" fill="#fff"/>
+    <circle cx="13" cy="12.5" r="3" fill="rgba(255,210,0,0.85)"/>
+    <path d="M9.5 19L7 24L11 22L9.5 19Z" fill="rgba(255,255,255,0.75)"/>
+    <path d="M16.5 19L19 24L15 22L16.5 19Z" fill="rgba(255,255,255,0.75)"/>
   </svg>
 );
 
-const ChatBubble = () => (
-  /* 면접 제안 — 말풍선 */
-  <svg width="48" height="44" viewBox="0 0 48 44" fill="none">
-    <path d="M6 6H42C43.1 6 44 6.9 44 8V28C44 29.1 43.1 30 42 30H22L14 38V30H6C4.9 30 4 29.1 4 28V8C4 6.9 4.9 6 6 6Z" fill="#7BAEF7"/>
-    <circle cx="16" cy="18" r="2" fill="#fff"/>
-    <circle cx="24" cy="18" r="2" fill="#fff"/>
-    <circle cx="32" cy="18" r="2" fill="#fff"/>
+/* 커뮤니티 — 두 사람 */
+const CommunityIcon = () => (
+  <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+    <circle cx="9.5" cy="8" r="4" fill="#fff"/>
+    <path d="M1.5 22C1.5 17.9 5.1 14.6 9.5 14.6" stroke="#fff" strokeWidth="2.5" strokeLinecap="round"/>
+    <circle cx="18.5" cy="8" r="3" fill="rgba(255,255,255,0.65)"/>
+    <path d="M16.5 14.6C20.3 14.6 24.5 17.3 24.5 22" stroke="rgba(255,255,255,0.65)" strokeWidth="2" strokeLinecap="round"/>
   </svg>
 );
 
-const Headphones = () => (
-  /* AI 면접 코칭 */
-  <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-    <path d="M8 28C8 17 15 8 24 8C33 8 40 17 40 28" stroke="#34C5A7" strokeWidth="3.5" fill="none"/>
-    <rect x="6" y="26" width="10" height="14" rx="3" fill="#34C5A7"/>
-    <rect x="32" y="26" width="10" height="14" rx="3" fill="#34C5A7"/>
-    <circle cx="11" cy="33" r="2" fill="#fff"/>
-    <circle cx="37" cy="33" r="2" fill="#fff"/>
+/* AI 면접 코칭 — 마이크 + 스파클 */
+const AICoachIcon = () => (
+  <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+    <rect x="9" y="2" width="8" height="12" rx="4" fill="#fff"/>
+    <path d="M5 12C5 17.5 8.6 20.5 13 20.5C17.4 20.5 21 17.5 21 12"
+      stroke="#fff" strokeWidth="2" strokeLinecap="round" fill="none"/>
+    <line x1="13" y1="20.5" x2="13" y2="23" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
+    <line x1="10" y1="23" x2="16" y2="23" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
+    <circle cx="21" cy="5" r="1.5" fill="rgba(255,255,255,0.7)"/>
+    <circle cx="23.5" cy="2.5" r="1" fill="rgba(255,255,255,0.5)"/>
   </svg>
 );
 
-const Folder = () => (
-  /* 즐겨찾기/북마크 */
-  <svg width="48" height="44" viewBox="0 0 48 44" fill="none">
-    <path d="M4 10C4 8.9 4.9 8 6 8H18L22 12H42C43.1 12 44 12.9 44 14V36C44 37.1 43.1 38 42 38H6C4.9 38 4 37.1 4 36V10Z" fill="#FB923C"/>
-    <path d="M4 16C4 14.9 4.9 14 6 14H42C43.1 14 44 14.9 44 16V36C44 37.1 43.1 38 42 38H6C4.9 38 4 37.1 4 36V16Z" fill="#FBA572"/>
+/* 즐겨찾기 — 북마크 리본 */
+const BookmarkIcon = () => (
+  <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+    <path d="M7 3H19C19.6 3 20 3.4 20 4V23L13 18.5L6 23V4C6 3.4 6.4 3 7 3Z" fill="#fff"/>
+    <line x1="10" y1="9" x2="16" y2="9" stroke="rgba(234,88,12,0.45)" strokeWidth="1.5" strokeLinecap="round"/>
   </svg>
 );
 
-const BarChart = () => (
-  /* 직군별 통계 */
-  <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-    <rect x="8"  y="26" width="6" height="16" rx="2" fill="#34C5A7"/>
-    <rect x="18" y="18" width="6" height="24" rx="2" fill="#34C5A7"/>
-    <rect x="28" y="22" width="6" height="20" rx="2" fill="#34C5A7"/>
-    <rect x="38" y="10" width="6" height="32" rx="2" fill="#34C5A7"/>
+/* 직군별 통계 — 포디엄 */
+const StatIcon = () => (
+  <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+    <rect x="9.5" y="10" width="7" height="13" rx="1.5" fill="#fff"/>
+    <rect x="2.5" y="15" width="7" height="8" rx="1.5" fill="rgba(255,255,255,0.65)"/>
+    <rect x="16.5" y="12" width="7" height="11" rx="1.5" fill="rgba(255,255,255,0.85)"/>
+    <path d="M12 7.5L13 5L14 7.5" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
   </svg>
 );
 
-const Heart = () => (
-  /* 추천/커뮤니티 */
-  <svg width="48" height="44" viewBox="0 0 48 44" fill="none">
-    <path d="M24 40C24 40 6 28 6 16C6 10 10 6 16 6C20 6 23 8 24 11C25 8 28 6 32 6C38 6 42 10 42 16C42 28 24 40 24 40Z" fill="#FF6B9D"/>
+/* 추천 문제 — 전구 */
+const RecommendIcon = () => (
+  <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+    <path d="M13 3C9.7 3 7 5.7 7 9C7 11.7 8.8 13.6 10 15H16C17.2 13.6 19 11.7 19 9C19 5.7 16.3 3 13 3Z" fill="#fff"/>
+    <rect x="10" y="15" width="6" height="2" rx="0.5" fill="rgba(255,255,255,0.85)"/>
+    <rect x="10.5" y="17" width="5" height="2" rx="0.5" fill="rgba(255,255,255,0.65)"/>
+    <path d="M11.5 19L13 22L14.5 19Z" fill="rgba(255,255,255,0.55)"/>
   </svg>
 );
 
@@ -143,28 +148,149 @@ const SectionHeader = ({ title, hint }) => (
   </div>
 );
 
-const Tile = ({ icon, label, onClick, badge }) => (
+const tagColorMap = {
+  "Java":        { bg: "#FEF3C7", color: "#D97706" },
+  "Spring":      { bg: "#DCFCE7", color: "#16A34A" },
+  "Redis":       { bg: "#FEE2E2", color: "#DC2626" },
+  "Kafka":       { bg: "#F5F3FF", color: "#7C3AED" },
+  "Database":    { bg: "#FFF7ED", color: "#EA580C" },
+  "React":       { bg: "#DBEAFE", color: "#2563EB" },
+  "TypeScript":  { bg: "#EEF2FF", color: "#4F46E5" },
+  "Vite":        { bg: "#F0FDF4", color: "#16A34A" },
+  "Performance": { bg: "#FFF1F2", color: "#E11D48" },
+  "AI/ML":       { bg: "#F5F3FF", color: "#7C3AED" },
+  "dbt":         { bg: "#ECFDF5", color: "#059669" },
+  "Spark":       { bg: "#FFF7ED", color: "#EA580C" },
+  "MLOps":       { bg: "#EEF2FF", color: "#4F46E5" },
+};
+
+const TechTrendCard = ({ item, onClick }) => {
+  const tagStyle = tagColorMap[item.tag] ?? { bg: "#F3F4F6", color: "#6B7280" };
+  const [imgError, setImgError] = useState(false);
+
+  return (
+    <div
+      onClick={onClick}
+      style={{
+        border: "1px solid #ECEEF2",
+        borderRadius: 14,
+        background: "#fff",
+        cursor: "pointer",
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+        transition: "all 0.18s ease",
+      }}
+      onMouseEnter={e => {
+        e.currentTarget.style.borderColor = "#C7D7FA";
+        e.currentTarget.style.boxShadow = "0 4px 16px rgba(74,123,247,0.1)";
+        e.currentTarget.style.transform = "translateY(-2px)";
+      }}
+      onMouseLeave={e => {
+        e.currentTarget.style.borderColor = "#ECEEF2";
+        e.currentTarget.style.boxShadow = "none";
+        e.currentTarget.style.transform = "translateY(0)";
+      }}
+    >
+      {/* 썸네일 영역 */}
+      <div style={{
+        aspectRatio: "16 / 9",
+        background: item.imageUrl && !imgError
+          ? "#F3F4F6"
+          : `linear-gradient(135deg, ${tagStyle.bg} 0%, #fff 100%)`,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        position: "relative", overflow: "hidden",
+      }}>
+        {item.imageUrl && !imgError ? (
+          <img
+            src={item.imageUrl}
+            alt={item.title}
+            onError={() => setImgError(true)}
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
+        ) : (
+          <span style={{
+            fontSize: 14, fontWeight: 700,
+            color: tagStyle.color, opacity: 0.7,
+            letterSpacing: "0.04em",
+          }}>
+            {item.tag}
+          </span>
+        )}
+      </div>
+
+      <div style={{ padding: "16px 18px 14px", display: "flex", flexDirection: "column", gap: 8, flexGrow: 1 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span style={{
+            fontSize: 11, fontWeight: 700,
+            padding: "3px 10px", borderRadius: 999,
+            background: tagStyle.bg, color: tagStyle.color,
+          }}>{item.tag}</span>
+          {item.readTime && (
+            <span style={{ fontSize: 11, color: "#9BA3B2" }}>{item.readTime} 읽기</span>
+          )}
+        </div>
+        <div style={{
+          fontSize: 15, fontWeight: 700, color: "#1A1F2E",
+          lineHeight: 1.45,
+          overflow: "hidden", textOverflow: "ellipsis",
+          display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
+        }}>{item.title}</div>
+        <div style={{
+          fontSize: 13, color: "#7B8290", lineHeight: 1.55,
+          overflow: "hidden", textOverflow: "ellipsis",
+          display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
+          flexGrow: 1,
+        }}>{item.description}</div>
+        <div style={{
+          display: "flex", justifyContent: "space-between", alignItems: "center",
+          paddingTop: 10, borderTop: "1px solid #F3F4F6", marginTop: 4,
+        }}>
+          <span style={{ fontSize: 12, fontWeight: 600, color: "#4A7BF7" }}>{item.source}</span>
+          <span style={{ fontSize: 11, color: "#9BA3B2" }}>{item.date}</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const Tile = ({ icon, label, onClick, badge, bg }) => (
   <div onClick={onClick} style={{
     display: "flex", flexDirection: "column", alignItems: "center",
-    padding: "12px 8px", borderRadius: 14, cursor: onClick ? "pointer" : "default",
-    transition: "background 0.15s"
+    padding: "16px 10px 12px", borderRadius: 16,
+    cursor: onClick ? "pointer" : "default",
+    border: "1px solid transparent",
+    transition: "all 0.18s ease"
   }}
-  onMouseEnter={(e) => { if (onClick) e.currentTarget.style.background = "#F7F8FA"; }}
-  onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}>
+  onMouseEnter={(e) => {
+    if (!onClick) return;
+    e.currentTarget.style.background = "#F7F9FF";
+    e.currentTarget.style.borderColor = "#E0E7FF";
+    const icon = e.currentTarget.querySelector(".tile-icon-inner");
+    if (icon) icon.style.transform = "translateY(-3px)";
+  }}
+  onMouseLeave={(e) => {
+    e.currentTarget.style.background = "transparent";
+    e.currentTarget.style.borderColor = "transparent";
+    const icon = e.currentTarget.querySelector(".tile-icon-inner");
+    if (icon) icon.style.transform = "translateY(0)";
+  }}>
     <div style={{ position: "relative" }}>
-      <TileIcon>{icon}</TileIcon>
+      <div className="tile-icon-inner" style={{ transition: "transform 0.18s ease" }}>
+        <TileIcon bg={bg}>{icon}</TileIcon>
+      </div>
       {badge && (
         <span style={{
-          position: "absolute", top: -2, right: -2,
+          position: "absolute", top: 0, right: 0,
           background: "#FF4757", color: "#fff",
-          fontSize: 10, fontWeight: 700,
-          width: 18, height: 18, borderRadius: 999,
+          fontSize: 9, fontWeight: 800,
+          width: 16, height: 16, borderRadius: 999,
           display: "flex", alignItems: "center", justifyContent: "center",
-          letterSpacing: 0
+          border: "2px solid #fff"
         }}>{badge}</span>
       )}
     </div>
-    <div style={{ fontSize: 13, color: "#3D434C", fontWeight: 500, textAlign: "center" }}>
+    <div style={{ fontSize: 12.5, color: "#3D434C", fontWeight: 600, textAlign: "center", letterSpacing: "-0.01em" }}>
       {label}
     </div>
   </div>
@@ -179,21 +305,32 @@ const Dashboard = () => {
   const companyThemes = getCompanyThemes(jobCategoryName);
 
   const [stats, setStats] = useState(null);
+  const [techTrends, setTechTrends] = useState([]);
+  const [trendsLoading, setTrendsLoading] = useState(true);
+
   useEffect(() => {
     meApi.stats().then(setStats).catch(() => {});
   }, []);
 
+  useEffect(() => {
+    setTrendsLoading(true);
+    techTrendApi.list()
+      .then(setTechTrends)
+      .catch(() => setTechTrends(getTechTrends(jobCategoryName)))
+      .finally(() => setTrendsLoading(false));
+  }, []);
+
   const tiles = [
-    { icon: <Layered />,    label: "문제 풀기",     onClick: () => navigate("/questions") },
-    { icon: <Document accent="#FFB800" />, label: "이력서 첨삭", onClick: () => navigate("/resume") },
-    { icon: <PaperStack />, label: "내 답변",       onClick: () => navigate("/my/answers") },
-    { icon: <Target />,     label: "레벨 체크",     onClick: () => navigate("/levelcheck") },
-    { icon: <Donut />,      label: "학습 현황",     onClick: () => navigate("/my/status") },
-    { icon: <ChatBubble />, label: "커뮤니티",      onClick: () => navigate("/community") },
-    { icon: <Headphones />, label: "AI 면접 코칭",  badge: "N" },
-    { icon: <Folder />,     label: "즐겨찾기" },
-    { icon: <BarChart />,   label: "직군별 통계" },
-    { icon: <Heart />,      label: "추천 문제",     onClick: () => navigate("/questions") },
+    { icon: <QuizIcon />,      label: "문제 풀기",    onClick: () => navigate("/questions"), bg: "#3B6AE8" },
+    { icon: <ResumeIcon />,    label: "이력서 첨삭",  onClick: () => navigate("/resume"),    bg: "#D97706" },
+    { icon: <AnswerIcon />,    label: "내 답변",      onClick: () => navigate("/my/answers"),bg: "#4F46E5" },
+    { icon: <LevelIcon />,     label: "레벨 체크",    onClick: () => navigate("/levelcheck"),bg: "#DC2626" },
+    { icon: <RocketIcon />,    label: "학습 현황",    onClick: () => navigate("/my/status"), bg: "#DB2777" },
+    { icon: <CommunityIcon />, label: "커뮤니티",     onClick: () => navigate("/community"), bg: "#0284C7" },
+    { icon: <AICoachIcon />,   label: "AI 면접 코칭", badge: "N",                            bg: "#059669" },
+    { icon: <BookmarkIcon />,  label: "즐겨찾기",                                             bg: "#EA580C" },
+    { icon: <StatIcon />,      label: "직군별 통계",                                         bg: "#7C3AED" },
+    { icon: <RecommendIcon />, label: "추천 문제",    onClick: () => navigate("/questions"), bg: "#E11D48" },
   ];
 
   return (
@@ -202,49 +339,119 @@ const Dashboard = () => {
 
       <div style={{ padding: "48px 48px 80px", maxWidth: 1280, margin: "0 auto" }}>
 
-        {/* 검색/배너 박스 — wanted 식 슬림 */}
+        {/* 히어로 배너 */}
         <div style={{
-          maxWidth: 720, margin: "0 auto 36px",
-          display: "flex", alignItems: "center", gap: 12,
-          padding: "14px 22px",
-          background: "#F7F8FA",
-          border: "1px solid #ECEEF2",
-          borderRadius: 999,
-          cursor: "pointer"
-        }}
-          onClick={() => navigate("/levelcheck")}>
+          marginBottom: 40,
+          background: "linear-gradient(135deg, #1A1F2E 0%, #283268 55%, #4A7BF7 100%)",
+          borderRadius: 22,
+          padding: "32px 40px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          position: "relative",
+          overflow: "hidden"
+        }}>
+          {/* 배경 장식 */}
           <div style={{
-            width: 36, height: 36, borderRadius: 999,
-            background: "#E4ECFB", display: "flex",
-            alignItems: "center", justifyContent: "center",
-            fontSize: 20
-          }}>
-            🧑‍💻
+            position: "absolute", right: 220, top: -50,
+            width: 140, height: 140, borderRadius: "50%",
+            background: "rgba(255,255,255,0.04)", pointerEvents: "none"
+          }} />
+          <div style={{
+            position: "absolute", right: 60, bottom: -60,
+            width: 200, height: 200, borderRadius: "50%",
+            background: "rgba(255,255,255,0.04)", pointerEvents: "none"
+          }} />
+          <div style={{
+            position: "absolute", right: 160, top: 10,
+            width: 60, height: 60, borderRadius: "50%",
+            background: "rgba(74,123,247,0.25)", pointerEvents: "none"
+          }} />
+
+          <div style={{ zIndex: 1 }}>
+            <div style={{
+              display: "inline-flex", alignItems: "center", gap: 6,
+              background: "rgba(255,255,255,0.12)",
+              borderRadius: 999, padding: "4px 12px",
+              fontSize: 12, color: "rgba(255,255,255,0.85)",
+              fontWeight: 600, marginBottom: 12, letterSpacing: "0.02em"
+            }}>
+              <span style={{ fontSize: 10 }}>●</span> {jobCategoryName} 직군 면접 준비
+            </div>
+            <div style={{
+              fontSize: 22, fontWeight: 700, color: "#fff",
+              marginBottom: 8, letterSpacing: "-0.02em", lineHeight: 1.3
+            }}>
+              {nickname}님, 오늘도 성장하는 하루 되세요! 🎯
+            </div>
+            <div style={{ fontSize: 13.5, color: "rgba(255,255,255,0.65)", fontWeight: 400 }}>
+              {stats?.currentStreakDays > 0
+                ? `🔥 ${stats.currentStreakDays}일 연속 학습 중 · 총 ${stats.totalAnswers ?? 0}개 답변 완료`
+                : "첫 번째 답변을 작성하고 학습을 시작해보세요"}
+            </div>
           </div>
-          <span style={{
-            flex: 1, fontSize: 14, color: "#7B8290", fontWeight: 500
-          }}>
-            {nickname}님, 면접 준비를 시작해볼까요?
-          </span>
-          <IconArrowRight size={16} style={{ color: "#7B8290" }} />
+
+          <div style={{ display: "flex", gap: 10, zIndex: 1, flexShrink: 0 }}>
+            <button
+              onClick={() => navigate("/levelcheck")}
+              style={{
+                background: "rgba(255,255,255,0.12)",
+                color: "#fff",
+                border: "1px solid rgba(255,255,255,0.25)",
+                borderRadius: 12,
+                padding: "12px 22px",
+                fontWeight: 600,
+                fontSize: 14,
+                cursor: "pointer",
+                fontFamily: "inherit"
+              }}>
+              레벨 체크
+            </button>
+            <button
+              onClick={() => navigate("/questions")}
+              style={{
+                background: "#fff",
+                color: "#4A7BF7",
+                border: "none",
+                borderRadius: 12,
+                padding: "12px 24px",
+                fontWeight: 700,
+                fontSize: 14,
+                cursor: "pointer",
+                fontFamily: "inherit",
+                display: "flex",
+                alignItems: "center",
+                gap: 6
+              }}>
+              문제 풀러가기 <IconArrowRight size={14} />
+            </button>
+          </div>
         </div>
 
-        {/* 메뉴 아이콘 그리드 */}
+        {/* 빠른 메뉴 */}
+        <div style={{ marginBottom: 12 }}>
+          <span style={{
+            fontSize: 12, fontWeight: 700, color: "#9BA3B2",
+            letterSpacing: "0.06em", textTransform: "uppercase"
+          }}>
+            빠른 메뉴
+          </span>
+        </div>
         <div style={{
           display: "grid",
-          gridTemplateColumns: "repeat(10, 1fr)",
+          gridTemplateColumns: "repeat(5, 1fr)",
           gap: 4,
-          marginBottom: 56,
-          padding: "0 8px"
+          marginBottom: 52,
+          padding: "0 4px"
         }}>
           {tiles.map((t, i) => (
             <Tile key={i} {...t} />
           ))}
         </div>
 
-        {/* ─── 지금 주목할 소식 ─── */}
+        {/* ─── 지금 주목할 채용 정보 ─── */}
         <SectionHeader
-          title="지금 주목할 소식"
+          title="지금 주목할 채용 정보"
           hint={`${jobCategoryName} 직군 추천`}
         />
         <div style={{
@@ -280,6 +487,49 @@ const Dashboard = () => {
             </div>
           ))}
         </div>
+
+        {/* ─── 요즘 IT 기술 트렌드 ─── */}
+        <SectionHeader
+          title="요즘 IT 기술 트렌드"
+          hint="기술 블로그 큐레이션"
+        />
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(4, 1fr)",
+          gap: 16,
+          marginBottom: 48
+        }}>
+          {trendsLoading
+            ? Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} style={{
+                  border: "1px solid #ECEEF2", borderRadius: 14,
+                  height: 280,
+                  background: "linear-gradient(90deg, #F3F4F6 25%, #E9EAEC 50%, #F3F4F6 75%)",
+                  backgroundSize: "200% 100%",
+                  animation: "shimmer 1.4s infinite",
+                }} />
+              ))
+            : techTrends.map((t) => (
+                <TechTrendCard
+                  key={t.id ?? t.url}
+                  item={t}
+                  onClick={() => {
+                    if (t.id) {
+                      navigate(`/tech-trends/${t.id}`);
+                    } else if (t.url) {
+                      window.open(t.url, "_blank", "noopener,noreferrer");
+                    }
+                  }}
+                />
+              ))
+          }
+        </div>
+        <style>{`
+          @keyframes shimmer {
+            0%   { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+          }
+        `}</style>
 
         {/* ─── 테마로 살펴보는 회사/포지션 ─── */}
         <SectionHeader

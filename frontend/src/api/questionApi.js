@@ -27,3 +27,8 @@ export const categoryApi = {
 export const meApi = {
   stats: () => http.get("/me/stats"),
 };
+
+export const techTrendApi = {
+  list:   ()   => http.get("/tech-trends"),
+  detail: (id) => http.get(`/tech-trends/${id}`),
+};
