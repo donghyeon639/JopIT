@@ -66,3 +66,128 @@ export const getJobNews = (jobCategoryName) =>
 
 export const getCompanyThemes = (jobCategoryName) =>
   companyThemesByJob[jobCategoryName] ?? companyThemesByJob["백엔드"];
+
+/* ─────────────────────────────────────────────
+ *  IT 기술 트렌드 mock — 직군별 테크 블로그 큐레이션
+ *  실제 외부 API 미연동. 추후 기술 블로그 RSS / 크롤링으로 교체 예정.
+ * ─────────────────────────────────────────────*/
+
+export const techTrendsByJob = {
+  "백엔드": [
+    {
+      id: "tt-be-1",
+      title: "Java 21 Virtual Threads 실전 적용기",
+      source: "카카오 기술 블로그",
+      description: "Spring Boot 3.2에서 Virtual Threads를 도입해 처리량을 3배 개선한 사례. 마이그레이션 포인트와 주의사항을 정리했습니다.",
+      tag: "Java",
+      readTime: "5분",
+      date: "2026.05.05",
+    },
+    {
+      id: "tt-be-2",
+      title: "Redis 캐싱 전략 완벽 가이드",
+      source: "우아한형제들 기술 블로그",
+      description: "캐시 스탬피드·캐시 미스 대응 전략부터 분산 캐시 설계까지, 실무에서 얻은 노하우를 정리했습니다.",
+      tag: "Redis",
+      readTime: "8분",
+      date: "2026.05.02",
+    },
+    {
+      id: "tt-be-3",
+      title: "Kafka 이벤트 드리븐 아키텍처 전환기",
+      source: "LINE 기술 블로그",
+      description: "동기식 REST 호출 구조에서 Kafka 기반 이벤트 드리븐으로 전환하면서 얻은 교훈들을 공유합니다.",
+      tag: "Kafka",
+      readTime: "7분",
+      date: "2026.04.28",
+    },
+    {
+      id: "tt-be-4",
+      title: "PostgreSQL 쿼리 최적화 실전 사례",
+      source: "토스 기술 블로그",
+      description: "인덱스 설계부터 EXPLAIN ANALYZE 분석까지, 레거시 쿼리를 90% 빠르게 만든 과정을 담았습니다.",
+      tag: "Database",
+      readTime: "6분",
+      date: "2026.04.24",
+    },
+  ],
+  "프론트엔드": [
+    {
+      id: "tt-fe-1",
+      title: "React Server Components 도입 후기",
+      source: "카카오 기술 블로그",
+      description: "Next.js 15의 RSC를 프로덕션에 도입하며 마주친 트레이드오프와 해결 방법을 솔직하게 공유합니다.",
+      tag: "React",
+      readTime: "7분",
+      date: "2026.05.06",
+    },
+    {
+      id: "tt-fe-2",
+      title: "TypeScript 5.5의 새로운 기능들",
+      source: "토스 기술 블로그",
+      description: "infer 키워드 개선, const 타입 매개변수 등 실무에서 바로 쓸 수 있는 새 기능들을 정리했습니다.",
+      tag: "TypeScript",
+      readTime: "5분",
+      date: "2026.05.03",
+    },
+    {
+      id: "tt-fe-3",
+      title: "Vite 6 마이그레이션 가이드",
+      source: "우아한형제들 기술 블로그",
+      description: "Vite 5에서 6로 업그레이드하면서 겪은 Breaking Changes와 빌드 속도 개선 효과를 정리했습니다.",
+      tag: "Vite",
+      readTime: "4분",
+      date: "2026.04.30",
+    },
+    {
+      id: "tt-fe-4",
+      title: "Core Web Vitals 실전 최적화",
+      source: "LINE 기술 블로그",
+      description: "코드 스플리팅, 이미지 최적화, CLS 방지 기법으로 LCP를 1.2초 단축한 경험을 담았습니다.",
+      tag: "Performance",
+      readTime: "9분",
+      date: "2026.04.25",
+    },
+  ],
+  "데이터": [
+    {
+      id: "tt-da-1",
+      title: "dbt로 데이터 파이프라인 혁신하기",
+      source: "카카오 기술 블로그",
+      description: "SQL 기반 dbt를 도입해 데이터 변환 로직을 버전 관리하고 테스트 자동화를 구현한 사례를 소개합니다.",
+      tag: "dbt",
+      readTime: "6분",
+      date: "2026.05.04",
+    },
+    {
+      id: "tt-da-2",
+      title: "Vector DB 도입 전 꼭 알아야 할 것들",
+      source: "토스 기술 블로그",
+      description: "Pinecone·Weaviate·pgvector 비교부터 실제 RAG 파이프라인 구축 경험까지 핵심만 정리했습니다.",
+      tag: "AI/ML",
+      readTime: "8분",
+      date: "2026.05.01",
+    },
+    {
+      id: "tt-da-3",
+      title: "Apache Spark vs Flink 선택 기준",
+      source: "LINE 기술 블로그",
+      description: "배치 중심 vs 스트리밍 중심 아키텍처 결정 트리와 실무 선택 가이드를 제공합니다.",
+      tag: "Spark",
+      readTime: "7분",
+      date: "2026.04.27",
+    },
+    {
+      id: "tt-da-4",
+      title: "MLOps 파이프라인 구축 실전기",
+      source: "우아한형제들 기술 블로그",
+      description: "모델 학습부터 서빙·모니터링까지 MLOps 전체 파이프라인을 구축하면서 얻은 인사이트를 담았습니다.",
+      tag: "MLOps",
+      readTime: "10분",
+      date: "2026.04.22",
+    },
+  ],
+};
+
+export const getTechTrends = (jobCategoryName) =>
+  techTrendsByJob[jobCategoryName] ?? techTrendsByJob["백엔드"];

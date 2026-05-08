@@ -12,6 +12,7 @@ import MyAnswers from "./screens/MyAnswers.jsx";
 import LearningStatus from "./screens/LearningStatus.jsx";
 import Community from "./screens/Community.jsx";
 import AnswerDetail from "./screens/AnswerDetail.jsx";
+import TechTrendDetail from "./screens/TechTrendDetail.jsx";
 import ProtectedRoute from "./components/common/ProtectedRoute.jsx";
 import AdminRoute from "./components/admin/AdminRoute.jsx";
 import AdminDashboard from "./screens/admin/AdminDashboard.jsx";
@@ -46,6 +47,7 @@ export default function App() {
         <Route path="/my/status" element={<ProtectedRoute><LearningStatus /></ProtectedRoute>} />
         <Route path="/community" element={<ProtectedRoute><Community /></ProtectedRoute>} />
         <Route path="/answer" element={<ProtectedRoute><AnswerDetail /></ProtectedRoute>} />
+        <Route path="/tech-trends/:id" element={<ProtectedRoute><TechTrendDetail /></ProtectedRoute>} />
 
         {/* 관리자 전용 라우트 */}
         <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
