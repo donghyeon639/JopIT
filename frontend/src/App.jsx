@@ -3,6 +3,8 @@ import { AuthProvider, useAuth } from "./context/AuthContext.jsx";
 import Landing from "./screens/Landing.jsx";
 import LevelCheck from "./screens/LevelCheck.jsx";
 import Auth from "./screens/Auth.jsx";
+import OAuthCallback from "./screens/OAuthCallback.jsx";
+import SocialSetup from "./screens/SocialSetup.jsx";
 import Dashboard from "./screens/Dashboard.jsx";
 import QuestionList from "./screens/QuestionList.jsx";
 import Solve from "./screens/Solve.jsx";
@@ -36,6 +38,8 @@ export default function App() {
         <Route path="/levelcheck" element={<LevelCheck />} />
         <Route path="/signup" element={<Auth mode="signup" />} />
         <Route path="/login" element={<Auth mode="login" />} />
+        <Route path="/social/callback" element={<OAuthCallback />} />
+        <Route path="/social-setup" element={<ProtectedRoute><SocialSetup /></ProtectedRoute>} />
 
         {/* 로그인 필요 — 학습 / 커뮤니티 */}
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />

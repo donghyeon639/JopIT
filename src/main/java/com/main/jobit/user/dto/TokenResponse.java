@@ -16,4 +16,5 @@ public class TokenResponse {
     private String username;
     private Role role;
     private String jobCategoryName;
+    private boolean needsProfileUpdate;
 }

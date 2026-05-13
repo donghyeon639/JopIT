@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback } from "react";
+  import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
 
 const AuthContext = createContext(null);
 
@@ -34,6 +34,12 @@ export function AuthProvider({ children }) {
   const logout = useCallback(() => {
     sessionStorage.clear();
     setAuth(null);
+  }, []);
+
+  useEffect(() => {
+    const handleExpired = () => setAuth(null);
+    window.addEventListener("auth:expired", handleExpired);
+    return () => window.removeEventListener("auth:expired", handleExpired);
   }, []);
 
   return (
