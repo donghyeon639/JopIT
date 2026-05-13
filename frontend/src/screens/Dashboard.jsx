@@ -340,7 +340,7 @@ const Dashboard = () => {
       <div style={{ padding: "48px 48px 80px", maxWidth: 1280, margin: "0 auto" }}>
 
         {/* 히어로 배너 */}
-        <div style={{
+        <div className="dp-hero-banner" style={{
           marginBottom: 40,
           background: "linear-gradient(135deg, #1A1F2E 0%, #283268 55%, #4A7BF7 100%)",
           borderRadius: 22,
@@ -391,7 +391,7 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div style={{ display: "flex", gap: 10, zIndex: 1, flexShrink: 0 }}>
+          <div className="dp-hero-cta-group" style={{ display: "flex", gap: 10, zIndex: 1, flexShrink: 0 }}>
             <button
               onClick={() => navigate("/levelcheck")}
               style={{

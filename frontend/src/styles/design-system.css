@@ -195,13 +195,14 @@
 .dp-nav {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 16px 48px;
+  gap: 36px;
+  padding: 16px 28px;
   border-bottom: 1px solid var(--gray-200);
   background: #fff;
   height: 64px;
 }
-.dp-nav-left { display: flex; align-items: center; gap: 32px; }
+.dp-nav-left { display: flex; align-items: center; }
+.dp-nav-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
 .dp-logo { display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 700; letter-spacing: -0.02em; color: var(--gray-900); }
 .dp-logo-mark {
   width: 28px; height: 28px; border-radius: 7px;
@@ -304,10 +305,128 @@
   overflow-y: auto;
 }
 
-/* Responsive nav */
+/* Hamburger / mobile-only utilities — base */
+.dp-nav-burger {
+  display: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  border: 1px solid var(--gray-200);
+  background: #fff;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  margin-left: 8px;
+}
+.dp-nav-burger:hover { background: var(--gray-50); }
+.dp-nav-burger span,
+.dp-nav-burger span::before,
+.dp-nav-burger span::after {
+  display: block;
+  width: 18px;
+  height: 2px;
+  background: var(--gray-800);
+  border-radius: 2px;
+  position: relative;
+  transition: transform 0.2s, top 0.2s, bottom 0.2s, opacity 0.2s;
+}
+.dp-nav-burger span::before,
+.dp-nav-burger span::after { content: ""; position: absolute; left: 0; }
+.dp-nav-burger span::before { top: -6px; }
+.dp-nav-burger span::after  { top: 6px; }
+.dp-nav-burger.is-open span { background: transparent; }
+.dp-nav-burger.is-open span::before { top: 0; transform: rotate(45deg); }
+.dp-nav-burger.is-open span::after  { top: 0; transform: rotate(-45deg); }
+
+.dp-nav-search { display: flex; }
+.dp-nav-auth-buttons { display: flex; }
+.dp-nav-mobile-drawer { display: none; }
+
+/* Tablet */
 @media (max-width: 1024px) {
-  .dp-nav { padding: 14px 24px; }
-  .dp-page { padding: 24px 24px 60px; }
+  .dp-nav { padding: 12px 20px; gap: 20px; }
+  .dp-page { padding: 24px 20px 60px; }
+
+  /* 5-col tile grid → 3-col */
+  [style*="repeat(5, 1fr)"] { grid-template-columns: repeat(3, 1fr) !important; }
+  /* 4-col → 2-col */
+  [style*="repeat(4, 1fr)"] { grid-template-columns: repeat(2, 1fr) !important; }
+  /* sidebar layouts → single col */
+  [style*="1fr 320px"]  { grid-template-columns: 1fr !important; }
+  [style*="1fr 400px"]  { grid-template-columns: 1fr !important; }
+  [style*="1fr 1.1fr"]  { grid-template-columns: 1fr !important; }
+  [style*="1.3fr 1fr"]  { grid-template-columns: 1fr !important; }
+
+  /* Dashboard / page wide paddings → narrower */
+  [style*="padding: 48px 48px 80px"] { padding: 32px 20px 60px !important; }
+  [style*="padding: 32px 48px 80px"] { padding: 24px 20px 60px !important; }
+  [style*="padding: 40px 48px 80px"] { padding: 28px 20px 60px !important; }
+  [style*="padding: 80px 48px 100px"] { padding: 56px 20px 72px !important; }
+  [style*="padding: 20px 48px"]      { padding: 16px 20px !important; }
+}
+
+/* Mobile (tablet portrait & phone) */
+@media (max-width: 768px) {
+  .t-display { font-size: 36px; }
+  .t-h1 { font-size: 26px; }
+  .t-h2 { font-size: 20px; }
+  .t-h3 { font-size: 18px; }
+
+  /* Nav: hide center links + search, show hamburger */
+  .dp-nav { padding: 10px 16px; height: 56px; gap: 0; }
+  .dp-nav .dp-nav-links { display: none; }
+  .dp-nav .dp-nav-search { display: none; }
+  .dp-nav .dp-nav-auth-buttons { display: none; }
+  .dp-nav-burger { display: inline-flex; }
+  .dp-nav-mobile-drawer.is-open { display: block; }
+
+  /* Page container padding */
+  .dp-page { padding: 20px 16px 60px; }
+
+  /* Grids collapse */
+  [style*="repeat(5, 1fr)"] { grid-template-columns: repeat(2, 1fr) !important; }
+  [style*="repeat(4, 1fr)"] { grid-template-columns: repeat(2, 1fr) !important; }
+  [style*="repeat(3, 1fr)"] { grid-template-columns: 1fr !important; }
+  [style*="repeat(2, 1fr)"] { grid-template-columns: 1fr !important; }
+  [style*="1fr 1fr 1fr"]    { grid-template-columns: 1fr !important; }
+  [style*="1fr 1fr"]        { grid-template-columns: 1fr !important; }
+
+  /* Inline page paddings */
+  [style*="padding: 48px 48px 80px"] { padding: 20px 16px 56px !important; }
+  [style*="padding: 32px 48px 80px"] { padding: 20px 16px 56px !important; }
+  [style*="padding: 40px 48px 80px"] { padding: 20px 16px 56px !important; }
+  [style*="padding: 80px 48px 100px"] { padding: 44px 16px 64px !important; }
+  [style*="padding: 100px 32px 40px"] { padding: 60px 16px 32px !important; }
+  [style*="padding: 20px 48px"]      { padding: 14px 16px !important; }
+
+  /* Hero banner: stack content + CTAs */
+  .dp-hero-banner {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    padding: 24px 20px !important;
+    gap: 18px;
+  }
+  .dp-hero-banner .dp-hero-cta-group {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  .dp-hero-banner .dp-hero-cta-group > button { flex: 1 1 auto; }
+
+  /* QuestionList table-like grid (60px 1fr 120px 100px 60px) — compress columns */
+  [style*="60px 1fr 120px 100px 60px"] {
+    grid-template-columns: auto 1fr auto !important;
+    column-gap: 10px;
+    row-gap: 6px;
+  }
+
+  /* Tables in admin: horizontal scroll fallback */
+  .dp-screen table { display: block; overflow-x: auto; }
+
+  /* Auth */
+  .auth-form-panel { padding: 32px 16px; }
+
+  /* Generic max-width containers shouldn't have side padding double-applied */
+  .dp-screen img, .dp-screen video { max-width: 100%; height: auto; }
 }
 
 /* Responsive auth */
@@ -316,12 +435,19 @@
   .auth-form-panel { padding: 40px 24px; }
 }
 
-/* Responsive landing */
+/* Responsive landing legacy class names */
 @media (max-width: 768px) {
-  .t-display { font-size: 36px; }
-  .t-h1 { font-size: 26px; }
-  .t-h2 { font-size: 20px; }
   .landing-hero-grid { grid-template-columns: 1fr !important; }
   .landing-section-grid-3 { grid-template-columns: 1fr !important; }
   .landing-section-grid-2 { grid-template-columns: 1fr !important; }
+}
+
+/* Small phones */
+@media (max-width: 420px) {
+  .t-display { font-size: 30px; }
+  .t-h1 { font-size: 22px; }
+  .dp-nav { padding: 8px 12px; }
+  .dp-page { padding: 16px 12px 48px; }
+  [style*="repeat(5, 1fr)"],
+  [style*="repeat(4, 1fr)"] { grid-template-columns: repeat(2, 1fr) !important; }
 }
