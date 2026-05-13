@@ -37,6 +37,14 @@ jobs:
       GITHUB_TOKEN: ci-dummy-token
       GITHUB_OWNER: ci-owner
       GITHUB_REPO: ci-repo
+      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID || 'dummy-google-id' }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET || 'dummy-google-secret' }}
+      GITHUB_OAUTH_CLIENT_ID: ${{ secrets.GITHUB_OAUTH_CLIENT_ID || 'dummy-github-id' }}
+      GITHUB_OAUTH_CLIENT_SECRET: ${{ secrets.GITHUB_OAUTH_CLIENT_SECRET || 'dummy-github-secret' }}
+      KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID || 'dummy-kakao-id' }}
+      KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET || 'dummy-kakao-secret' }}
+      APP_SOCIAL_REDIRECT_URI: http://localhost:5173/social/callback
+      APP_SOCIAL_FAILURE_REDIRECT_URI: http://localhost:5173/login?reason=social_failed
 
     steps:
       - name: Checkout
