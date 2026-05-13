@@ -44,11 +44,18 @@ const IconGithub = (p) => (
   </svg>
 );
 
+const IconKakao = (p) => (
+  <svg width={p.size || 18} height={p.size || 18} viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="11" fill="#FEE500" />
+    <path fill="#191919" d="M7.7 8.5h2.1v2.8l2.3-2.8h2.6L12 11.6l2.9 3.9h-2.6L10 12.4v3.1H7.7z" />
+  </svg>
+);
+
 export {
   Icon,
   IconHome, IconList, IconSpark, IconBookmark, IconBuilding,
   IconHeart, IconHeartFill, IconChevronRight, IconChevronDown, IconCheck,
   IconSearch, IconBell, IconFilter, IconClock,
   IconArrowRight, IconArrowLeft, IconPlay, IconCode,
-  IconUser, IconLock, IconMail, IconGoogle, IconGithub,
+  IconUser, IconLock, IconMail, IconGoogle, IconGithub, IconKakao,
 };

@@ -1,7 +1,6 @@
 package com.main.jobit.user;
 
 import com.main.jobit.job.JobCategory;
-import com.main.jobit.job.JobDetail;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -45,37 +44,37 @@ public class Users {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20, columnDefinition = "varchar(20) not null default 'USER'")
     private Role role;
+@ManyToOne(fetch = FetchType.LAZY)
+@JoinColumn(name = "job_category_id")
+private JobCategory jobCategory;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "job_category_id", nullable = false)
-    private JobCategory jobCategory;
+@Column(name = "created_at", nullable = false, updatable = false)
+private LocalDateTime createdAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "job_detail_id")
-    private JobDetail jobDetail;
+@Builder
+public Users(String username, String password, String nickname, Role role,
+             JobCategory jobCategory) {
+    this.username = username;
+    this.password = password;
+    this.nickname = nickname;
+    this.role = role != null ? role : Role.USER;
+    this.jobCategory = jobCategory;
+}
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    @Builder
-    public Users(String username, String password, String nickname, Role role,
-                 JobCategory jobCategory, JobDetail jobDetail) {
-        this.username = username;
-        this.password = password;
-        this.nickname = nickname;
-        this.role = role != null ? role : Role.USER;
-        this.jobCategory = jobCategory;
-        this.jobDetail = jobDetail;
+@PrePersist
+void onCreate() {
+    if (createdAt == null) {
+        createdAt = LocalDateTime.now();
     }
+    if (role == null) {
+        role = Role.USER;
+    }
+}
 
-    @PrePersist
-    void onCreate() {
-        if (createdAt == null) {
-            createdAt = LocalDateTime.now();
-        }
-        if (role == null) {
-            role = Role.USER;
-        }
+
+    public void updateProfile(String nickname, JobCategory jobCategory) {
+        this.nickname = nickname;
+        this.jobCategory = jobCategory;
     }
 
     public void changeNickname(String nickname) {
@@ -84,10 +83,6 @@ public class Users {
 
     public void changePassword(String encodedPassword) {
         this.password = encodedPassword;
-    }
-
-    public void changeJobDetail(JobDetail jobDetail) {
-        this.jobDetail = jobDetail;
     }
 
     public void changeRole(Role role) {

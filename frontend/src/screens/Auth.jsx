@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
-  IconUser, IconLock, IconMail, IconGoogle, IconGithub, IconArrowRight,
+  IconUser, IconLock, IconMail, IconGoogle, IconGithub, IconKakao, IconArrowRight,
   Logo
 } from "../components/Components.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
@@ -14,11 +14,14 @@ const Auth = ({ mode = "signup" }) => {
   const { saveAuth } = useAuth();
   const isSignup = mode === "signup";
   const redirectAfterLogin = location.state?.from || "/dashboard";
+  const sessionExpired = !isSignup && new URLSearchParams(location.search).get("reason") === "expired";
+  const socialFailed = !isSignup && new URLSearchParams(location.search).get("reason") === "social_failed";
 
   const [selectedJob, setSelectedJob] = useState(0);
   const [form, setForm] = useState({ username: "", password: "", nickname: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const socialBasePath = import.meta.env.VITE_API_BASE_URL || "/api";
 
   const handleChange = (e) => {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -48,6 +51,10 @@ const Auth = ({ mode = "signup" }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSocialLogin = (provider) => {
+    window.location.href = `${socialBasePath}/social/authorization/${provider}`;
   };
 
   return (
@@ -85,17 +92,44 @@ const Auth = ({ mode = "signup" }) => {
         {/* Social buttons */}
         <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 24 }}>
           <button className="btn btn-outline btn-lg"
-            style={{ width: "100%", justifyContent: "center", gap: 10 }}>
+            style={{ width: "100%", justifyContent: "center", gap: 10 }}
+            onClick={() => handleSocialLogin("google")}>
             <IconGoogle /> Google로 {isSignup ? "시작하기" : "로그인"}
           </button>
           <button className="btn btn-outline btn-lg"
-            style={{ width: "100%", justifyContent: "center", gap: 10 }}>
+            style={{ width: "100%", justifyContent: "center", gap: 10 }}
+            onClick={() => handleSocialLogin("github")}>
             <IconGithub /> GitHub으로 {isSignup ? "시작하기" : "로그인"}
+          </button>
+          <button className="btn btn-lg"
+            style={{ width: "100%", justifyContent: "center", gap: 10, background: "#FEE500", color: "#191919" }}
+            onClick={() => handleSocialLogin("kakao")}>
+            <IconKakao /> 카카오로 {isSignup ? "시작하기" : "로그인"}
           </button>
         </div>
 
 
         {/* Error message */}
+        {socialFailed && !error && (
+          <div style={{
+            marginBottom: 16, padding: "10px 14px",
+            background: "#FEF2F2", border: "1px solid #FECACA",
+            borderRadius: 8, color: "#DC2626", fontSize: 13
+          }}>
+            소셜 로그인에 실패했습니다. 다시 시도해주세요.
+          </div>
+        )}
+
+        {sessionExpired && !error && (
+          <div style={{
+            marginBottom: 16, padding: "10px 14px",
+            background: "#EFF6FF", border: "1px solid #BFDBFE",
+            borderRadius: 8, color: "#1D4ED8", fontSize: 13
+          }}>
+            세션이 만료되었습니다. 다시 로그인해주세요.
+          </div>
+        )}
+
         {error && (
           <div style={{
             marginBottom: 16, padding: "10px 14px",

@@ -2,12 +2,8 @@ package com.main.jobit.admin;
 
 import com.main.jobit.job.JobCategory;
 import com.main.jobit.job.JobCategoryRepository;
-import com.main.jobit.job.JobDetail;
-import com.main.jobit.job.JobDetailRepository;
 import com.main.jobit.job.dto.JobCategoryRequest;
 import com.main.jobit.job.dto.JobCategoryResponse;
-import com.main.jobit.job.dto.JobDetailRequest;
-import com.main.jobit.job.dto.JobDetailResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +24,6 @@ import java.util.UUID;
 public class AdminCategoryController {
 
     private final JobCategoryRepository categoryRepository;
-    private final JobDetailRepository detailRepository;
 
     @GetMapping
     public ResponseEntity<List<JobCategoryResponse>> listCategories() {
@@ -46,30 +41,6 @@ public class AdminCategoryController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCategory(@PathVariable UUID id) {
         categoryRepository.deleteById(id);
-        return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/{categoryId}/details")
-    public ResponseEntity<List<JobDetailResponse>> listDetails(@PathVariable UUID categoryId) {
-        return ResponseEntity.ok(
-                detailRepository.findByCategoryId(categoryId).stream()
-                        .map(JobDetailResponse::from).toList()
-        );
-    }
-
-    @PostMapping("/{categoryId}/details")
-    public ResponseEntity<JobDetailResponse> createDetail(
-            @PathVariable UUID categoryId,
-            @RequestBody JobDetailRequest request) {
-        JobCategory category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다."));
-        JobDetail saved = detailRepository.save(request.toEntity(category));
-        return ResponseEntity.status(HttpStatus.CREATED).body(JobDetailResponse.from(saved));
-    }
-
-    @DeleteMapping("/details/{id}")
-    public ResponseEntity<Void> deleteDetail(@PathVariable UUID id) {
-        detailRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }
 }

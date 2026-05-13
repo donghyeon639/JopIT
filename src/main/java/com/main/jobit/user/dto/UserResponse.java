@@ -22,8 +22,6 @@ public class UserResponse {
     private Role role;
     private UUID jobCategoryId;
     private String jobCategoryName;
-    private UUID jobDetailId;
-    private String jobDetailName;
     private LocalDateTime createdAt;
 
     public static UserResponse from(Users user) {
@@ -32,10 +30,8 @@ public class UserResponse {
                 .username(user.getUsername())
                 .nickname(user.getNickname())
                 .role(user.getRole())
-                .jobCategoryId(user.getJobCategory().getId())
-                .jobCategoryName(user.getJobCategory().getName())
-                .jobDetailId(user.getJobDetail() != null ? user.getJobDetail().getId() : null)
-                .jobDetailName(user.getJobDetail() != null ? user.getJobDetail().getName() : null)
+                .jobCategoryId(user.getJobCategory() != null ? user.getJobCategory().getId() : null)
+                .jobCategoryName(user.getJobCategory() != null ? user.getJobCategory().getName() : null)
                 .createdAt(user.getCreatedAt())
                 .build();
     }

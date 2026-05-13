@@ -17,5 +17,4 @@ public class UserRegisterRequest {
     private String password;
     private String nickname;
     private UUID jobCategoryId;
-    private UUID jobDetailId;
 }

@@ -1,10 +1,22 @@
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
 
+function isAuthPath(path) {
+  return path.startsWith("/auth/");
+}
+
+function redirectToLoginIfNeeded() {
+  if (typeof window === "undefined") return;
+  const currentPath = window.location.pathname;
+  if (currentPath === "/login" || currentPath === "/signup") return;
+  window.location.href = "/login?reason=expired";
+}
+
 async function request(path, options = {}) {
   const token = sessionStorage.getItem("accessToken");
+  const includeAuthHeader = token && !isAuthPath(path);
   const headers = {
     "Content-Type": "application/json",
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(includeAuthHeader ? { Authorization: `Bearer ${token}` } : {}),
     ...options.headers,
   };
 
@@ -12,6 +24,14 @@ async function request(path, options = {}) {
 
   // 204 No Content 등 body 없는 응답 처리
   const data = res.status !== 204 ? await res.json().catch(() => ({})) : {};
+
+  if (res.status === 401 && !isAuthPath(path)) {
+    sessionStorage.clear();
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new Event("auth:expired"));
+    }
+    redirectToLoginIfNeeded();
+  }
 
   if (!res.ok) {
     const msg =
