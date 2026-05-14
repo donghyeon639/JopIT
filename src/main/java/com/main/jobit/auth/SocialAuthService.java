@@ -138,9 +138,6 @@ public class SocialAuthService {
         String candidate = sanitized;
         int suffix = 1;
         while (userRepository.existsByUsername(candidate)) {
-            if (userRepository.findByUsername(candidate).isPresent()) {
-                return candidate;
-            }
             String tail = "_" + suffix++;
             int maxPrefix = Math.max(1, 30 - tail.length());
             candidate = sanitized.substring(0, Math.min(sanitized.length(), maxPrefix)) + tail;
