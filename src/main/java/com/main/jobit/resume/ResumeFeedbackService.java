@@ -1,6 +1,6 @@
 package com.main.jobit.resume;
 
-import com.main.jobit.aifeedback.ClaudeCliService;
+import com.main.jobit.aifeedback.LlmPort;
 import com.main.jobit.resume.dto.ResumeFeedbackResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,13 +15,13 @@ public class ResumeFeedbackService {
     private static final int MIN_CHARS = 50;
     private static final int MAX_CHARS = 50_000;
 
-    private final ClaudeCliService claudeCliService;
+    private final LlmPort llmPort;
     private final ResumeTextExtractor extractor;
 
     public ResumeFeedbackResponse fromText(String text, String jobCategory) {
         String cleaned = text == null ? "" : text.trim();
         validateLength(cleaned);
-        String feedback = claudeCliService.call(buildPrompt(cleaned, jobCategory));
+        String feedback = llmPort.generate(buildPrompt(cleaned, jobCategory));
         return new ResumeFeedbackResponse(feedback, cleaned.length(), "text/plain");
     }
 
@@ -29,7 +29,7 @@ public class ResumeFeedbackService {
         ResumeTextExtractor.Extracted extracted = extractor.extract(file);
         String text = extracted.text();
         validateLength(text);
-        String feedback = claudeCliService.call(buildPrompt(text, jobCategory));
+        String feedback = llmPort.generate(buildPrompt(text, jobCategory));
         return new ResumeFeedbackResponse(feedback, text.length(), extracted.mimeType());
     }
 

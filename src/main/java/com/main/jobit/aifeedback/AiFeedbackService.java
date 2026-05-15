@@ -15,7 +15,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AiFeedbackService {
 
-    private final ClaudeCliService claudeCliService;
+    private final LlmPort llmPort;
     private final AnswerRepository answerRepository;
 
     @Async
@@ -33,7 +33,7 @@ public class AiFeedbackService {
         String prompt = buildPrompt(answer);
 
         try {
-            String feedback = claudeCliService.call(prompt);
+            String feedback = llmPort.generate(prompt);
             answer.applyFeedback(feedback);
         } catch (Exception e) {
             log.error("AI 피드백 생성 실패 (answerId={}): {}", answerId, e.getMessage());

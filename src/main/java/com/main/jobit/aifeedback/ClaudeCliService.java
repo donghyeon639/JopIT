@@ -14,13 +14,18 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-public class ClaudeCliService {
+public class ClaudeCliService implements LlmPort {
 
     @Value("${claude.cli.timeout-seconds:120}")
     private int timeoutSeconds;
 
     private static final boolean IS_WINDOWS =
             System.getProperty("os.name", "").toLowerCase().contains("win");
+
+    @Override
+    public String generate(String prompt) {
+        return call(prompt);
+    }
 
     public String call(String prompt) {
         Path tempFile = null;
