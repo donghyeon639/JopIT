@@ -1,4 +1,4 @@
-package com.main.jobit.techtrend;
+package com.main.jobit.domain.techtrend;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

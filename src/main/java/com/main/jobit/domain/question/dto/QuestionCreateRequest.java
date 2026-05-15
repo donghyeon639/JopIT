@@ -1,8 +1,8 @@
-package com.main.jobit.question.dto;
+package com.main.jobit.domain.question.dto;
 
-import com.main.jobit.question.Difficulty;
-import com.main.jobit.question.Question;
-import com.main.jobit.question.QuestionCategory;
+import com.main.jobit.domain.question.Difficulty;
+import com.main.jobit.domain.question.Question;
+import com.main.jobit.domain.category.QuestionCategory;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;

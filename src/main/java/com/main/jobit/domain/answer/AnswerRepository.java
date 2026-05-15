@@ -1,4 +1,4 @@
-package com.main.jobit.answer;
+package com.main.jobit.domain.answer;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -19,11 +19,11 @@ public interface AnswerRepository extends JpaRepository<Answer, UUID> {
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""
             update Answer a
-               set a.feedbackStatus = com.main.jobit.answer.FeedbackStatus.PENDING
+               set a.feedbackStatus = com.main.jobit.domain.answer.FeedbackStatus.PENDING
              where a.id = :id
                and a.feedbackStatus in (
-                   com.main.jobit.answer.FeedbackStatus.NONE,
-                   com.main.jobit.answer.FeedbackStatus.FAILED
+                   com.main.jobit.domain.answer.FeedbackStatus.NONE,
+                   com.main.jobit.domain.answer.FeedbackStatus.FAILED
                )
             """)
     int markFeedbackPendingIfEligible(@Param("id") UUID id);

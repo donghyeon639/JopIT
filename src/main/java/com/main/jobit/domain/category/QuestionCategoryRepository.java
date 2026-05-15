@@ -1,4 +1,4 @@
-package com.main.jobit.question;
+package com.main.jobit.domain.category;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

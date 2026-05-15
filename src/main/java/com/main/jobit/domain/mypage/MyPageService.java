@@ -1,11 +1,11 @@
-package com.main.jobit.mypage;
+package com.main.jobit.domain.mypage;
 
-import com.main.jobit.answer.Answer;
-import com.main.jobit.answer.AnswerRepository;
-import com.main.jobit.answer.FeedbackStatus;
-import com.main.jobit.mypage.dto.MyStatsResponse;
-import com.main.jobit.user.UserRepository;
-import com.main.jobit.user.Users;
+import com.main.jobit.domain.answer.Answer;
+import com.main.jobit.domain.answer.AnswerRepository;
+import com.main.jobit.domain.answer.FeedbackStatus;
+import com.main.jobit.domain.mypage.dto.MyStatsResponse;
+import com.main.jobit.domain.user.UserRepository;
+import com.main.jobit.domain.user.Users;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

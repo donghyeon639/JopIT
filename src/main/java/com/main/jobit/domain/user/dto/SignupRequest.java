@@ -1,4 +1,4 @@
-package com.main.jobit.user.dto;
+package com.main.jobit.domain.user.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

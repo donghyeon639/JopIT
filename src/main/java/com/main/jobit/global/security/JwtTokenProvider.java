@@ -1,4 +1,4 @@
-package com.main.jobit.security;
+package com.main.jobit.global.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;

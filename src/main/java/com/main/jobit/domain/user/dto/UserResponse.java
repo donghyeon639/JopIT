@@ -1,7 +1,7 @@
-package com.main.jobit.user.dto;
+package com.main.jobit.domain.user.dto;
 
-import com.main.jobit.user.Role;
-import com.main.jobit.user.Users;
+import com.main.jobit.domain.user.Role;
+import com.main.jobit.domain.user.Users;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

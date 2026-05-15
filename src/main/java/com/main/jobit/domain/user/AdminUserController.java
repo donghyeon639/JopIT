@@ -1,9 +1,9 @@
-package com.main.jobit.admin;
+package com.main.jobit.domain.user;
 
-import com.main.jobit.user.Role;
-import com.main.jobit.user.UserRepository;
-import com.main.jobit.user.Users;
-import com.main.jobit.user.dto.UserResponse;
+import com.main.jobit.domain.user.Role;
+import com.main.jobit.domain.user.UserRepository;
+import com.main.jobit.domain.user.Users;
+import com.main.jobit.domain.user.dto.UserResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

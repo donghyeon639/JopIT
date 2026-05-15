@@ -1,7 +1,7 @@
-package com.main.jobit.category;
+package com.main.jobit.domain.category;
 
-import com.main.jobit.question.QuestionCategoryRepository;
-import com.main.jobit.question.dto.QuestionCategoryResponse;
+import com.main.jobit.domain.category.QuestionCategoryRepository;
+import com.main.jobit.domain.category.dto.QuestionCategoryResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

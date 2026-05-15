@@ -1,7 +1,7 @@
-package com.main.jobit.resume;
+package com.main.jobit.domain.resume;
 
-import com.main.jobit.aifeedback.LlmPort;
-import com.main.jobit.resume.dto.ResumeFeedbackResponse;
+import com.main.jobit.ai.port.LlmPort;
+import com.main.jobit.domain.resume.dto.ResumeFeedbackResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

@@ -1,4 +1,4 @@
-package com.main.jobit.job;
+package com.main.jobit.domain.job;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

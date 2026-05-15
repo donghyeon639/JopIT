@@ -1,4 +1,4 @@
-package com.main.jobit.question;
+package com.main.jobit.domain.category;
 
 import jakarta.persistence.*;
 import lombok.*;

@@ -1,4 +1,4 @@
-package com.main.jobit.security;
+package com.main.jobit.global.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

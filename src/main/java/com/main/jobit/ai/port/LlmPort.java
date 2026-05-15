@@ -1,4 +1,4 @@
-package com.main.jobit.aifeedback;
+package com.main.jobit.ai.port;
 
 /**
  * 도메인이 의존하는 LLM 추상화. 도메인 코드는 구체 어댑터(ClaudeCliService 등)를 직접 참조하지 않고

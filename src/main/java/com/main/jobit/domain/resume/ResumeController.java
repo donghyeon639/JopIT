@@ -1,6 +1,6 @@
-package com.main.jobit.resume;
+package com.main.jobit.domain.resume;
 
-import com.main.jobit.resume.dto.ResumeFeedbackResponse;
+import com.main.jobit.domain.resume.dto.ResumeFeedbackResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;

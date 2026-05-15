@@ -1,9 +1,9 @@
-package com.main.jobit.admin;
+package com.main.jobit.domain.category;
 
-import com.main.jobit.question.QuestionCategory;
-import com.main.jobit.question.QuestionCategoryRepository;
-import com.main.jobit.question.dto.QuestionCategoryRequest;
-import com.main.jobit.question.dto.QuestionCategoryResponse;
+import com.main.jobit.domain.category.QuestionCategory;
+import com.main.jobit.domain.category.QuestionCategoryRepository;
+import com.main.jobit.domain.category.dto.QuestionCategoryRequest;
+import com.main.jobit.domain.category.dto.QuestionCategoryResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

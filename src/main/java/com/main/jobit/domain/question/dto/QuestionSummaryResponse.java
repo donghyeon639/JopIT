@@ -1,7 +1,7 @@
-package com.main.jobit.question.dto;
+package com.main.jobit.domain.question.dto;
 
-import com.main.jobit.question.Difficulty;
-import com.main.jobit.question.Question;
+import com.main.jobit.domain.question.Difficulty;
+import com.main.jobit.domain.question.Question;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

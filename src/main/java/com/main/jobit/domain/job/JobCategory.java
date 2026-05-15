@@ -1,4 +1,4 @@
-package com.main.jobit.job;
+package com.main.jobit.domain.job;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

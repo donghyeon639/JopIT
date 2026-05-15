@@ -1,7 +1,7 @@
-package com.main.jobit.question;
+package com.main.jobit.domain.question;
 
-import com.main.jobit.question.dto.QuestionDetailResponse;
-import com.main.jobit.question.dto.QuestionSummaryResponse;
+import com.main.jobit.domain.question.dto.QuestionDetailResponse;
+import com.main.jobit.domain.question.dto.QuestionSummaryResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

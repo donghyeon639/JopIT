@@ -1,6 +1,6 @@
-package com.main.jobit.question.dto;
+package com.main.jobit.domain.category.dto;
 
-import com.main.jobit.question.QuestionCategory;
+import com.main.jobit.domain.category.QuestionCategory;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

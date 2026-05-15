@@ -1,6 +1,6 @@
-package com.main.jobit.job.dto;
+package com.main.jobit.domain.job.dto;
 
-import com.main.jobit.job.JobCategory;
+import com.main.jobit.domain.job.JobCategory;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

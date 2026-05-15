@@ -1,7 +1,7 @@
-package com.main.jobit.security;
+package com.main.jobit.global.security;
 
-import com.main.jobit.user.UserRepository;
-import com.main.jobit.user.Users;
+import com.main.jobit.domain.user.UserRepository;
+import com.main.jobit.domain.user.Users;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;

@@ -1,4 +1,4 @@
-package com.main.jobit.common;
+package com.main.jobit.global.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;

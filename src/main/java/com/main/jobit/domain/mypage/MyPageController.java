@@ -1,6 +1,6 @@
-package com.main.jobit.mypage;
+package com.main.jobit.domain.mypage;
 
-import com.main.jobit.mypage.dto.MyStatsResponse;
+import com.main.jobit.domain.mypage.dto.MyStatsResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

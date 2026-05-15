@@ -1,6 +1,6 @@
-package com.main.jobit.comment.dto;
+package com.main.jobit.domain.comment.dto;
 
-import com.main.jobit.comment.Comment;
+import com.main.jobit.domain.comment.Comment;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

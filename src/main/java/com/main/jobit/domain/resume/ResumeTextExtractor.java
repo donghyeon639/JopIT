@@ -1,4 +1,4 @@
-package com.main.jobit.resume;
+package com.main.jobit.domain.resume;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;

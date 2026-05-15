@@ -1,13 +1,13 @@
-package com.main.jobit.answer;
+package com.main.jobit.domain.answer;
 
-import com.main.jobit.aifeedback.AiFeedbackService;
-import com.main.jobit.answer.dto.AnswerCreateRequest;
-import com.main.jobit.answer.dto.AnswerResponse;
-import com.main.jobit.comment.CommentRepository;
-import com.main.jobit.question.Question;
-import com.main.jobit.question.QuestionRepository;
-import com.main.jobit.user.UserRepository;
-import com.main.jobit.user.Users;
+import com.main.jobit.ai.feedback.AiFeedbackService;
+import com.main.jobit.domain.answer.dto.AnswerCreateRequest;
+import com.main.jobit.domain.answer.dto.AnswerResponse;
+import com.main.jobit.domain.comment.CommentRepository;
+import com.main.jobit.domain.question.Question;
+import com.main.jobit.domain.question.QuestionRepository;
+import com.main.jobit.domain.user.UserRepository;
+import com.main.jobit.domain.user.Users;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;

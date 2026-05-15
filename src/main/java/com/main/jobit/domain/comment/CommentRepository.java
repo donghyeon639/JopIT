@@ -1,4 +1,4 @@
-package com.main.jobit.comment;
+package com.main.jobit.domain.comment;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

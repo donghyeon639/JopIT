@@ -1,9 +1,9 @@
-package com.main.jobit.admin;
+package com.main.jobit.domain.question;
 
-import com.main.jobit.question.QuestionService;
-import com.main.jobit.question.dto.QuestionCreateRequest;
-import com.main.jobit.question.dto.QuestionDetailResponse;
-import com.main.jobit.question.dto.QuestionSummaryResponse;
+import com.main.jobit.domain.question.QuestionService;
+import com.main.jobit.domain.question.dto.QuestionCreateRequest;
+import com.main.jobit.domain.question.dto.QuestionDetailResponse;
+import com.main.jobit.domain.question.dto.QuestionSummaryResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

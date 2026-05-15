@@ -1,7 +1,8 @@
-package com.main.jobit.aifeedback;
+package com.main.jobit.ai.feedback;
 
-import com.main.jobit.answer.Answer;
-import com.main.jobit.answer.AnswerRepository;
+import com.main.jobit.ai.port.LlmPort;
+import com.main.jobit.domain.answer.Answer;
+import com.main.jobit.domain.answer.AnswerRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;

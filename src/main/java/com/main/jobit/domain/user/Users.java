@@ -1,6 +1,6 @@
-package com.main.jobit.user;
+package com.main.jobit.domain.user;
 
-import com.main.jobit.job.JobCategory;
+import com.main.jobit.domain.job.JobCategory;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

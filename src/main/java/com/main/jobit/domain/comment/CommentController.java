@@ -1,7 +1,7 @@
-package com.main.jobit.comment;
+package com.main.jobit.domain.comment;
 
-import com.main.jobit.comment.dto.CommentCreateRequest;
-import com.main.jobit.comment.dto.CommentResponse;
+import com.main.jobit.domain.comment.dto.CommentCreateRequest;
+import com.main.jobit.domain.comment.dto.CommentResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

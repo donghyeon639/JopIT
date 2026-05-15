@@ -1,7 +1,7 @@
-package com.main.jobit.comment;
+package com.main.jobit.domain.comment;
 
-import com.main.jobit.answer.Answer;
-import com.main.jobit.user.Users;
+import com.main.jobit.domain.answer.Answer;
+import com.main.jobit.domain.user.Users;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;

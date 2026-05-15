@@ -1,8 +1,8 @@
-package com.main.jobit.auth;
+package com.main.jobit.domain.user.auth;
 
-import com.main.jobit.user.dto.LoginRequest;
-import com.main.jobit.user.dto.SignupRequest;
-import com.main.jobit.user.dto.TokenResponse;
+import com.main.jobit.domain.user.dto.LoginRequest;
+import com.main.jobit.domain.user.dto.SignupRequest;
+import com.main.jobit.domain.user.dto.TokenResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

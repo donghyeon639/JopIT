@@ -1,4 +1,4 @@
-package com.main.jobit.user;
+package com.main.jobit.domain.user;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

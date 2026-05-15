@@ -1,4 +1,4 @@
-package com.main.jobit.comment.dto;
+package com.main.jobit.domain.comment.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

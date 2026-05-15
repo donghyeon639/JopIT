@@ -1,7 +1,7 @@
-package com.main.jobit.security;
+package com.main.jobit.global.security;
 
-import com.main.jobit.auth.SocialAuthService;
-import com.main.jobit.user.dto.TokenResponse;
+import com.main.jobit.domain.user.auth.SocialAuthService;
+import com.main.jobit.domain.user.dto.TokenResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.ObjectProvider;

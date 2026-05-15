@@ -1,4 +1,4 @@
-package com.main.jobit.common;
+package com.main.jobit.global.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

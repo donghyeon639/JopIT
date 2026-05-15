@@ -1,4 +1,4 @@
-package com.main.jobit.techtrend;
+package com.main.jobit.domain.techtrend;
 
 import com.rometools.modules.mediarss.MediaEntryModule;
 import com.rometools.modules.mediarss.MediaModule;

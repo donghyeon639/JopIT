@@ -1,5 +1,6 @@
-package com.main.jobit.aifeedback;
+package com.main.jobit.ai.claude;
 
+import com.main.jobit.ai.port.LlmPort;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

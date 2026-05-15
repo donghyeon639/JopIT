@@ -1,4 +1,4 @@
-package com.main.jobit.answer.dto;
+package com.main.jobit.domain.answer.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;

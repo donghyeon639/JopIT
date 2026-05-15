@@ -1,7 +1,7 @@
-package com.main.jobit.answer;
+package com.main.jobit.domain.answer;
 
-import com.main.jobit.answer.dto.AnswerCreateRequest;
-import com.main.jobit.answer.dto.AnswerResponse;
+import com.main.jobit.domain.answer.dto.AnswerCreateRequest;
+import com.main.jobit.domain.answer.dto.AnswerResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

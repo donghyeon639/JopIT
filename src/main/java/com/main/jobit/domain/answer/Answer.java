@@ -1,7 +1,7 @@
-package com.main.jobit.answer;
+package com.main.jobit.domain.answer;
 
-import com.main.jobit.question.Question;
-import com.main.jobit.user.Users;
+import com.main.jobit.domain.question.Question;
+import com.main.jobit.domain.user.Users;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;

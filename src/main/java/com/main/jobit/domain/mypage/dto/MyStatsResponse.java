@@ -1,4 +1,4 @@
-package com.main.jobit.mypage.dto;
+package com.main.jobit.domain.mypage.dto;
 
 import java.time.LocalDate;
 import java.util.List;

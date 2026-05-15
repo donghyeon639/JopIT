@@ -1,8 +1,8 @@
-package com.main.jobit.answer.dto;
+package com.main.jobit.domain.answer.dto;
 
-import com.main.jobit.answer.Answer;
-import com.main.jobit.answer.FeedbackStatus;
-import com.main.jobit.question.Difficulty;
+import com.main.jobit.domain.answer.Answer;
+import com.main.jobit.domain.answer.FeedbackStatus;
+import com.main.jobit.domain.question.Difficulty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

@@ -1,14 +1,14 @@
-package com.main.jobit.auth;
+package com.main.jobit.domain.user.auth;
 
-import com.main.jobit.job.JobCategory;
-import com.main.jobit.job.JobCategoryRepository;
-import com.main.jobit.security.JwtTokenProvider;
-import com.main.jobit.user.Role;
-import com.main.jobit.user.UserRepository;
-import com.main.jobit.user.Users;
-import com.main.jobit.user.dto.LoginRequest;
-import com.main.jobit.user.dto.SignupRequest;
-import com.main.jobit.user.dto.TokenResponse;
+import com.main.jobit.domain.job.JobCategory;
+import com.main.jobit.domain.job.JobCategoryRepository;
+import com.main.jobit.global.security.JwtTokenProvider;
+import com.main.jobit.domain.user.Role;
+import com.main.jobit.domain.user.UserRepository;
+import com.main.jobit.domain.user.Users;
+import com.main.jobit.domain.user.dto.LoginRequest;
+import com.main.jobit.domain.user.dto.SignupRequest;
+import com.main.jobit.domain.user.dto.TokenResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;

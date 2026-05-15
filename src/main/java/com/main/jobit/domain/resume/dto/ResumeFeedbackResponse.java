@@ -1,4 +1,4 @@
-package com.main.jobit.resume.dto;
+package com.main.jobit.domain.resume.dto;
 
 public record ResumeFeedbackResponse(
         String feedback,

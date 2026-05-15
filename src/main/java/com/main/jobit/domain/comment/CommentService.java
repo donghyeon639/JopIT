@@ -1,11 +1,11 @@
-package com.main.jobit.comment;
+package com.main.jobit.domain.comment;
 
-import com.main.jobit.answer.Answer;
-import com.main.jobit.answer.AnswerRepository;
-import com.main.jobit.comment.dto.CommentCreateRequest;
-import com.main.jobit.comment.dto.CommentResponse;
-import com.main.jobit.user.UserRepository;
-import com.main.jobit.user.Users;
+import com.main.jobit.domain.answer.Answer;
+import com.main.jobit.domain.answer.AnswerRepository;
+import com.main.jobit.domain.comment.dto.CommentCreateRequest;
+import com.main.jobit.domain.comment.dto.CommentResponse;
+import com.main.jobit.domain.user.UserRepository;
+import com.main.jobit.domain.user.Users;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

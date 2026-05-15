@@ -1,9 +1,9 @@
-package com.main.jobit.admin;
+package com.main.jobit.domain.job;
 
-import com.main.jobit.job.JobCategory;
-import com.main.jobit.job.JobCategoryRepository;
-import com.main.jobit.job.dto.JobCategoryRequest;
-import com.main.jobit.job.dto.JobCategoryResponse;
+import com.main.jobit.domain.job.JobCategory;
+import com.main.jobit.domain.job.JobCategoryRepository;
+import com.main.jobit.domain.job.dto.JobCategoryRequest;
+import com.main.jobit.domain.job.dto.JobCategoryResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
