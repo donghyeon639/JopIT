@@ -1,0 +1,66 @@
+name: Auto PR (dev to main)
+
+on:
+  push:
+    branches:
+      - dev
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  open-pr:
+    name: Open PR from dev to main
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for existing open PR
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          existing=$(gh pr list --base main --head dev --state open --json number --jq '.[0].number')
+          if [ -n "$existing" ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "number=$existing" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Skip when PR already exists
+        if: steps.check.outputs.exists == 'true'
+        run: |
+          echo "이미 열린 dev -> main PR #${{ steps.check.outputs.number }} 가 있습니다. 생성 단계는 건너뜁니다."
+
+      - name: Set up Python
+        if: steps.check.outputs.exists == 'false'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Generate PR body (커밋 목록 + 변경 파일 요약 + AI 요약 + 추천 테스트 케이스)
+        if: steps.check.outputs.exists == 'false'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          BASE_BRANCH: main
+        run: |
+          python .github/scripts/generate_pr_body.py > /tmp/pr_body.md
+          echo "----- generated PR body -----"
+          cat /tmp/pr_body.md
+          echo "----- end -----"
+
+      - name: Create PR
+        if: steps.check.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr create \
+            --base main \
+            --head dev \
+            --title "[Auto] dev to main 머지 요청" \
+            --body-file /tmp/pr_body.md

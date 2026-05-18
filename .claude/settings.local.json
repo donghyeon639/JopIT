@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git mv *)",
+      "Bash(mkdir -p domain/user/auth)",
+      "Bash(rmdir auth *)"
+    ]
+  }
+}

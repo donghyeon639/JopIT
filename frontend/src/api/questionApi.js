@@ -1,7 +1,16 @@
 import { http } from "./client.js";
 
+function buildQuestionListQuery({ categoryId, difficulty, page = 0, size = 10 } = {}) {
+  const params = new URLSearchParams();
+  if (categoryId) params.set("categoryId", categoryId);
+  if (difficulty) params.set("difficulty", difficulty);
+  params.set("page", page);
+  params.set("size", size);
+  return params.toString();
+}
+
 export const questionApi = {
-  list:            (categoryId)          => http.get(`/questions${categoryId ? `?categoryId=${categoryId}` : ""}`),
+  list:            (opts = {})           => http.get(`/questions?${buildQuestionListQuery(opts)}`),
   detail:          (id)                  => http.get(`/questions/${id}`),
   listAnswers:     (questionId)          => http.get(`/questions/${questionId}/answers`),
   createAnswer:    (questionId, content) => http.post(`/questions/${questionId}/answers`, { content }),
