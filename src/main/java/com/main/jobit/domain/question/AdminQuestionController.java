@@ -1,11 +1,14 @@
 package com.main.jobit.domain.question;
 
-import com.main.jobit.domain.question.QuestionService;
 import com.main.jobit.domain.question.dto.QuestionCreateRequest;
 import com.main.jobit.domain.question.dto.QuestionDetailResponse;
+import com.main.jobit.domain.question.dto.QuestionPagedResponse;
 import com.main.jobit.domain.question.dto.QuestionSummaryResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -15,9 +18,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -28,8 +31,11 @@ public class AdminQuestionController {
     private final QuestionService questionService;
 
     @GetMapping
-    public ResponseEntity<List<QuestionSummaryResponse>> list() {
-        return ResponseEntity.ok(questionService.getAll());
+    public ResponseEntity<QuestionPagedResponse<QuestionSummaryResponse>> list(
+            @RequestParam(required = false) UUID categoryId,
+            @RequestParam(required = false) Difficulty difficulty,
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(questionService.list(categoryId, difficulty, pageable));
     }
 
     @GetMapping("/{id}")

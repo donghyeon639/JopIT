@@ -4,12 +4,17 @@ import com.main.jobit.domain.category.QuestionCategory;
 import com.main.jobit.domain.category.QuestionCategoryRepository;
 import com.main.jobit.domain.question.dto.QuestionCreateRequest;
 import com.main.jobit.domain.question.dto.QuestionDetailResponse;
+import com.main.jobit.domain.question.dto.QuestionPagedResponse;
 import com.main.jobit.domain.question.dto.QuestionSummaryResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -19,18 +24,26 @@ public class QuestionService {
     private final QuestionRepository questionRepository;
     private final QuestionCategoryRepository questionCategoryRepository;
 
-    @Transactional(readOnly = true)
-    public List<QuestionSummaryResponse> getAll() {
-        return questionRepository.findAll().stream()
-                .map(QuestionSummaryResponse::from)
-                .toList();
-    }
+    private static final int MAX_PAGE_SIZE = 50;
+    private static final Set<String> ALLOWED_SORT_FIELDS = Set.of("createdAt", "difficulty");
 
     @Transactional(readOnly = true)
-    public List<QuestionSummaryResponse> getByCategory(UUID categoryId) {
-        return questionRepository.findByQuestionCategoryId(categoryId).stream()
-                .map(QuestionSummaryResponse::from)
-                .toList();
+    public QuestionPagedResponse<QuestionSummaryResponse> list(
+            UUID categoryId, Difficulty difficulty, Pageable pageable) {
+
+        Pageable safe = sanitize(pageable);
+
+        Page<Question> page;
+        if (categoryId != null && difficulty != null) {
+            page = questionRepository.findByQuestionCategoryIdAndDifficulty(categoryId, difficulty, safe);
+        } else if (categoryId != null) {
+            page = questionRepository.findByQuestionCategoryId(categoryId, safe);
+        } else if (difficulty != null) {
+            page = questionRepository.findByDifficulty(difficulty, safe);
+        } else {
+            page = questionRepository.findAll(safe);
+        }
+        return QuestionPagedResponse.from(page.map(QuestionSummaryResponse::from));
     }
 
     @Transactional(readOnly = true)
@@ -65,5 +78,18 @@ public class QuestionService {
             throw new IllegalArgumentException("문제를 찾을 수 없습니다.");
         }
         questionRepository.deleteById(id);
+    }
+
+    private Pageable sanitize(Pageable raw) {
+        Sort sanitized = Sort.by(
+                raw.getSort().stream()
+                        .filter(order -> ALLOWED_SORT_FIELDS.contains(order.getProperty()))
+                        .toList()
+        );
+        if (sanitized.isEmpty()) {
+            sanitized = Sort.by(Sort.Order.desc("createdAt"));
+        }
+        int size = Math.clamp(raw.getPageSize(), 1, MAX_PAGE_SIZE);
+        return PageRequest.of(raw.getPageNumber(), size, sanitized);
     }
 }

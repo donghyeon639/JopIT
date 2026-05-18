@@ -1,8 +1,17 @@
 import { http } from "./client.js";
 
 // 문제 관리
+function buildAdminQuestionsQuery({ categoryId, difficulty, page = 0, size = 20 } = {}) {
+  const params = new URLSearchParams();
+  if (categoryId) params.set("categoryId", categoryId);
+  if (difficulty) params.set("difficulty", difficulty);
+  params.set("page", page);
+  params.set("size", size);
+  return params.toString();
+}
+
 export const adminQuestions = {
-  list:   ()           => http.get("/admin/questions"),
+  list:   (opts = {})  => http.get(`/admin/questions?${buildAdminQuestionsQuery(opts)}`),
   detail: (id)         => http.get(`/admin/questions/${id}`),
   create: (data)       => http.post("/admin/questions", data),
   update: (id, data)   => http.put(`/admin/questions/${id}`, data),

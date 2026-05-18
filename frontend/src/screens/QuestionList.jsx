@@ -1,13 +1,13 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  IconHeart, IconChevronRight, IconChevronDown, IconCheck,
-  IconSearch, IconUser,
+  IconChevronRight, IconCheck, IconSearch,
   TopNav, DifficultyBadge, CategoryBadge
 } from "../components/Components.jsx";
 import { questionApi, categoryApi } from "../api/questionApi.js";
 import { useAuth } from "../context/AuthContext.jsx";
 
+const PAGE_SIZE = 10;
 const DIFF_OPTIONS = ["전체", "LOW", "MID", "HIGH"];
 const DIFF_LABEL   = { LOW: "하", MID: "중", HIGH: "상" };
 
@@ -24,22 +24,42 @@ const QuestionList = () => {
   const [loading,      setLoading]      = useState(true);
   const [fetchError,   setFetchError]   = useState(false);
 
-  // 카테고리 목록
+  // 페이지 상태
+  const [page, setPage] = useState(0);
+  const [pageMeta, setPageMeta] = useState({
+    page: 0, totalPages: 0, totalElements: 0, hasNext: false, hasPrev: false,
+  });
+
+  // 카테고리 목록 (한 번만)
   useEffect(() => {
     categoryApi.list().then(setCategories).catch(console.error);
   }, []);
 
-  // 문제 목록 (카테고리 변경 시 재조회)
+  // 문제 목록 (필터 또는 페이지 변경 시 재조회)
   useEffect(() => {
     setLoading(true);
     setFetchError(false);
-    questionApi.list(activeCatId)
-      .then(setQuestions)
+    questionApi.list({
+      categoryId: activeCatId || undefined,
+      difficulty: activeDiff === "전체" ? undefined : activeDiff,
+      page,
+      size: PAGE_SIZE,
+    })
+      .then(res => {
+        setQuestions(res.content || []);
+        setPageMeta({
+          page: res.page,
+          totalPages: res.totalPages,
+          totalElements: res.totalElements,
+          hasNext: res.hasNext,
+          hasPrev: res.hasPrev,
+        });
+      })
       .catch(() => setFetchError(true))
       .finally(() => setLoading(false));
-  }, [activeCatId]);
+  }, [activeCatId, activeDiff, page]);
 
-  // 내가 푼 문제 ID 세트 (로그인한 경우만)
+  // 내가 푼 문제 ID 세트 (로그인한 경우만, 첫 로드 시)
   useEffect(() => {
     if (!isLoggedIn) return;
     questionApi.myAnswers()
@@ -47,16 +67,25 @@ const QuestionList = () => {
       .catch(() => {});
   }, [isLoggedIn]);
 
-  // 클라이언트 필터 (난이도 + 검색)
-  const filtered = useMemo(() => {
-    return questions.filter(q => {
-      const matchDiff   = activeDiff === "전체" || q.difficulty === activeDiff;
-      const matchSearch = !search.trim() ||
-        q.title.toLowerCase().includes(search.toLowerCase()) ||
-        q.questionCategoryName?.toLowerCase().includes(search.toLowerCase());
-      return matchDiff && matchSearch;
-    });
-  }, [questions, activeDiff, search]);
+  // 필터 변경 시 page=0으로 리셋
+  const handleCategoryChange = (id) => {
+    setActiveCatId(id);
+    setPage(0);
+  };
+  const handleDifficultyChange = (d) => {
+    setActiveDiff(d);
+    setPage(0);
+  };
+
+  // 클라이언트 검색 — 서버 검색 미지원이라 현재 페이지 내에서만 동작
+  const visibleQuestions = useMemo(() => {
+    if (!search.trim()) return questions;
+    const q = search.toLowerCase();
+    return questions.filter(item =>
+      item.title.toLowerCase().includes(q) ||
+      item.questionCategoryName?.toLowerCase().includes(q)
+    );
+  }, [questions, search]);
 
   return (
     <div className="dp-screen" style={{ width: "100%", minHeight: "100vh", background: "var(--gray-50)" }}>
@@ -74,26 +103,16 @@ const QuestionList = () => {
         {/* 직군 탭 */}
         <div style={{ display: "flex", gap: 4, marginBottom: 20, borderBottom: "1px solid var(--gray-200)" }}>
           <div
-            onClick={() => setActiveCatId(null)}
-            style={{
-              padding: "12px 18px", fontSize: 14, fontWeight: 600, cursor: "pointer", marginBottom: -1,
-              borderBottom: "2px solid",
-              borderColor: activeCatId === null ? "var(--blue-600)" : "transparent",
-              color: activeCatId === null ? "var(--blue-700)" : "var(--gray-500)"
-            }}
+            onClick={() => handleCategoryChange(null)}
+            style={tabStyle(activeCatId === null)}
           >
             전체
           </div>
           {categories.map(cat => (
             <div
               key={cat.id}
-              onClick={() => setActiveCatId(cat.id)}
-              style={{
-                padding: "12px 18px", fontSize: 14, fontWeight: 600, cursor: "pointer", marginBottom: -1,
-                borderBottom: "2px solid",
-                borderColor: activeCatId === cat.id ? "var(--blue-600)" : "transparent",
-                color: activeCatId === cat.id ? "var(--blue-700)" : "var(--gray-500)"
-              }}
+              onClick={() => handleCategoryChange(cat.id)}
+              style={tabStyle(activeCatId === cat.id)}
             >
               {cat.name}
             </div>
@@ -110,7 +129,7 @@ const QuestionList = () => {
               <input
                 className="input"
                 style={{ paddingLeft: 40 }}
-                placeholder="문제 제목, 키워드로 검색해보세요"
+                placeholder="현재 페이지 내에서 검색"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
               />
@@ -122,13 +141,13 @@ const QuestionList = () => {
               난이도
             </span>
             {DIFF_OPTIONS.map(d => (
-              <Pill key={d} active={activeDiff === d} onClick={() => setActiveDiff(d)}>
+              <Pill key={d} active={activeDiff === d} onClick={() => handleDifficultyChange(d)}>
                 {d === "전체" ? "전체" : DIFF_LABEL[d]}
               </Pill>
             ))}
             <div style={{ flex: 1 }} />
             <span className="t-xs">
-              총 <b style={{ color: "var(--gray-900)" }}>{filtered.length}</b>개 문제
+              총 <b style={{ color: "var(--gray-900)" }}>{pageMeta.totalElements}</b>개 문제
             </span>
           </div>
         </div>
@@ -156,14 +175,14 @@ const QuestionList = () => {
             <div style={{ padding: 60, textAlign: "center", color: "#DC2626" }}>
               문제를 불러오지 못했습니다. 서버 연결을 확인해주세요.
             </div>
-          ) : filtered.length === 0 ? (
+          ) : visibleQuestions.length === 0 ? (
             <div style={{ padding: 60, textAlign: "center", color: "var(--gray-400)" }}>
-              {search || activeDiff !== "전체"
-                ? "검색 결과가 없습니다."
-                : "등록된 문제가 없습니다. 관리자 페이지에서 문제를 추가해보세요."}
+              {search
+                ? "현재 페이지에서 검색 결과가 없습니다."
+                : "조건에 맞는 문제가 없습니다."}
             </div>
           ) : (
-            filtered.map((q, i) => {
+            visibleQuestions.map((q, i) => {
               const solved = myAnswerQIds.has(q.id);
               return (
                 <div
@@ -174,7 +193,7 @@ const QuestionList = () => {
                     display: "grid",
                     gridTemplateColumns: "60px 1fr 120px 100px 60px",
                     padding: "16px 20px", alignItems: "center",
-                    borderBottom: i === filtered.length - 1 ? "none" : "1px solid var(--gray-100)",
+                    borderBottom: i === visibleQuestions.length - 1 ? "none" : "1px solid var(--gray-100)",
                     cursor: "pointer"
                   }}
                 >
@@ -206,10 +225,29 @@ const QuestionList = () => {
             })
           )}
         </div>
+
+        {/* 페이지네이션 */}
+        <Pagination
+          page={pageMeta.page}
+          totalPages={pageMeta.totalPages}
+          hasPrev={pageMeta.hasPrev}
+          hasNext={pageMeta.hasNext}
+          onChange={(next) => {
+            setPage(next);
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+        />
       </div>
     </div>
   );
 };
+
+const tabStyle = (active) => ({
+  padding: "12px 18px", fontSize: 14, fontWeight: 600, cursor: "pointer", marginBottom: -1,
+  borderBottom: "2px solid",
+  borderColor: active ? "var(--blue-600)" : "transparent",
+  color: active ? "var(--blue-700)" : "var(--gray-500)",
+});
 
 const Pill = ({ children, active, onClick }) => (
   <div onClick={onClick} style={{
@@ -219,6 +257,119 @@ const Pill = ({ children, active, onClick }) => (
     color: active ? "#fff" : "var(--gray-700)",
     transition: "all 0.15s"
   }}>{children}</div>
+);
+
+// 5개 윈도우. 현재 페이지가 중앙에 오도록, 양 끝 페이지에선 한쪽으로 치우침.
+const PAGE_WINDOW_SIZE = 5;
+function getPageWindow(page, totalPages) {
+  if (totalPages <= 0) return [];
+  if (totalPages <= PAGE_WINDOW_SIZE) {
+    return Array.from({ length: totalPages }, (_, i) => i);
+  }
+  const half = Math.floor(PAGE_WINDOW_SIZE / 2);
+  let start = page - half;
+  let end = page + half;
+  if (start < 0) { end -= start; start = 0; }
+  if (end > totalPages - 1) { start -= (end - (totalPages - 1)); end = totalPages - 1; }
+  start = Math.max(0, start);
+  return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+}
+
+const Pagination = ({ page, totalPages, hasPrev, hasNext, onChange }) => {
+  if (totalPages <= 1) return null;
+  const window = getPageWindow(page, totalPages);
+  const isFirst = page === 0;
+  const isLast = page === totalPages - 1;
+  return (
+    <div style={{
+      display: "flex", justifyContent: "center", alignItems: "center",
+      gap: 6, marginTop: 24,
+    }}>
+      <NavButton disabled={isFirst} onClick={() => onChange(0)} aria-label="첫 페이지">
+        <IconDoubleChevron direction="left" />
+      </NavButton>
+      <NavButton disabled={!hasPrev} onClick={() => onChange(page - 1)} aria-label="이전 페이지">
+        <IconChevron direction="left" />
+      </NavButton>
+
+      <div style={{
+        display: "flex", alignItems: "center", gap: 2,
+        padding: "4px 8px", borderRadius: 999, background: "var(--gray-100)",
+      }}>
+        {window.map(p => (
+          <PageNumberButton key={p} active={p === page} onClick={() => onChange(p)}>
+            {p + 1}
+          </PageNumberButton>
+        ))}
+      </div>
+
+      <NavButton disabled={!hasNext} onClick={() => onChange(page + 1)} aria-label="다음 페이지">
+        <IconChevron direction="right" />
+      </NavButton>
+      <NavButton disabled={isLast} onClick={() => onChange(totalPages - 1)} aria-label="마지막 페이지">
+        <IconDoubleChevron direction="right" />
+      </NavButton>
+    </div>
+  );
+};
+
+const NavButton = ({ children, disabled, onClick, ...rest }) => (
+  <button
+    {...rest}
+    disabled={disabled}
+    onClick={onClick}
+    style={{
+      width: 36, height: 36, padding: 0,
+      borderRadius: 999, border: "none",
+      background: "var(--gray-100)",
+      color: disabled ? "var(--gray-300)" : "var(--gray-700)",
+      display: "flex", alignItems: "center", justifyContent: "center",
+      cursor: disabled ? "not-allowed" : "pointer",
+      transition: "all 0.15s",
+    }}
+  >
+    {children}
+  </button>
+);
+
+const PageNumberButton = ({ children, active, onClick }) => (
+  <button
+    onClick={onClick}
+    style={{
+      minWidth: 32, height: 32, padding: "0 10px",
+      borderRadius: 999, border: "none",
+      background: active ? "var(--gray-900)" : "transparent",
+      color: active ? "#fff" : "var(--gray-700)",
+      fontSize: 13, fontWeight: 600,
+      cursor: "pointer",
+      transition: "all 0.15s",
+    }}
+  >
+    {children}
+  </button>
+);
+
+const IconChevron = ({ direction = "right", size = 16 }) => (
+  <svg
+    width={size} height={size} viewBox="0 0 24 24"
+    fill="none" stroke="currentColor" strokeWidth="2"
+    strokeLinecap="round" strokeLinejoin="round"
+    style={{ transform: direction === "left" ? "rotate(180deg)" : "none" }}
+  >
+    <polyline points="9 18 15 12 9 6" />
+  </svg>
+);
+
+const IconDoubleChevron = ({ direction = "right", size = 16 }) => (
+  <svg
+    width={size} height={size} viewBox="0 0 24 24"
+    fill="none" stroke="currentColor" strokeWidth="2"
+    strokeLinecap="round" strokeLinejoin="round"
+    style={{ transform: direction === "left" ? "rotate(180deg)" : "none" }}
+  >
+    <polyline points="6 18 12 12 6 6" />
+    <polyline points="13 18 19 12 13 6" />
+  </svg>
 );
 
 export default QuestionList;
