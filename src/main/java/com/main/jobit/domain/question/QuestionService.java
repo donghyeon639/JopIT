@@ -29,12 +29,25 @@ public class QuestionService {
 
     @Transactional(readOnly = true)
     public QuestionPagedResponse<QuestionSummaryResponse> list(
-            UUID categoryId, Difficulty difficulty, Pageable pageable) {
+            UUID categoryId, Difficulty difficulty, String search, Pageable pageable) {
 
         Pageable safe = sanitize(pageable);
+        String q = (search == null || search.isBlank()) ? null : search.trim();
 
         Page<Question> page;
-        if (categoryId != null && difficulty != null) {
+        if (q != null) {
+            if (categoryId != null && difficulty != null) {
+                page = questionRepository.findByQuestionCategoryIdAndDifficultyAndTitleContainingIgnoreCase(
+                        categoryId, difficulty, q, safe);
+            } else if (categoryId != null) {
+                page = questionRepository.findByQuestionCategoryIdAndTitleContainingIgnoreCase(
+                        categoryId, q, safe);
+            } else if (difficulty != null) {
+                page = questionRepository.findByDifficultyAndTitleContainingIgnoreCase(difficulty, q, safe);
+            } else {
+                page = questionRepository.findByTitleContainingIgnoreCase(q, safe);
+            }
+        } else if (categoryId != null && difficulty != null) {
             page = questionRepository.findByQuestionCategoryIdAndDifficulty(categoryId, difficulty, safe);
         } else if (categoryId != null) {
             page = questionRepository.findByQuestionCategoryId(categoryId, safe);

@@ -27,8 +27,9 @@ public class QuestionController {
     public ResponseEntity<QuestionPagedResponse<QuestionSummaryResponse>> list(
             @RequestParam(required = false) UUID categoryId,
             @RequestParam(required = false) Difficulty difficulty,
+            @RequestParam(required = false) String q,
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        return ResponseEntity.ok(questionService.list(categoryId, difficulty, pageable));
+        return ResponseEntity.ok(questionService.list(categoryId, difficulty, q, pageable));
     }
 
     @GetMapping("/{id}")

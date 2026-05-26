@@ -21,4 +21,18 @@ public interface QuestionRepository extends JpaRepository<Question, UUID> {
     @EntityGraph(attributePaths = "questionCategory")
     Page<Question> findByQuestionCategoryIdAndDifficulty(UUID questionCategoryId, Difficulty difficulty, Pageable pageable);
 
+    @EntityGraph(attributePaths = "questionCategory")
+    Page<Question> findByTitleContainingIgnoreCase(String title, Pageable pageable);
+
+    @EntityGraph(attributePaths = "questionCategory")
+    Page<Question> findByQuestionCategoryIdAndTitleContainingIgnoreCase(
+            UUID questionCategoryId, String title, Pageable pageable);
+
+    @EntityGraph(attributePaths = "questionCategory")
+    Page<Question> findByDifficultyAndTitleContainingIgnoreCase(
+            Difficulty difficulty, String title, Pageable pageable);
+
+    @EntityGraph(attributePaths = "questionCategory")
+    Page<Question> findByQuestionCategoryIdAndDifficultyAndTitleContainingIgnoreCase(
+            UUID questionCategoryId, Difficulty difficulty, String title, Pageable pageable);
 }

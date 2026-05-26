@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext.jsx";
 import Logo from "../common/Logo.jsx";
 import { IconSearch, IconBell } from "../icons/index.jsx";
+import { questionApi } from "../../api/questionApi.js";
 
 const NAV_LINKS = [
   { label: "홈",      path: "/dashboard" },
@@ -10,6 +11,37 @@ const NAV_LINKS = [
   { label: "커뮤니티", path: "/community" },
   { label: "면접 후기", path: "/reviews"   },
 ];
+
+/**
+ * 전역 검색이 매칭할 수 있는 페이지 카탈로그.
+ * keywords는 사용자가 입력할 만한 동의어/유사어.
+ */
+const PAGE_CATALOG = [
+  { label: "문제 풀기",     path: "/questions",  description: "직군별 기술면접 문제",
+    keywords: ["문제", "기술면접", "cs", "풀기", "questions"] },
+  { label: "이력서 첨삭",   path: "/resume",     description: "AI가 이력서를 첨삭",
+    keywords: ["이력서", "첨삭", "resume", "cv"] },
+  { label: "내 답변",       path: "/my/answers", description: "내가 작성한 답변 모음",
+    keywords: ["내답변", "답변", "내가 푼", "my answers"] },
+  { label: "학습 현황",     path: "/my/status",  description: "내 풀이 통계와 연속 학습",
+    keywords: ["학습", "현황", "통계", "stats"] },
+  { label: "커뮤니티",      path: "/community",  description: "다른 사람의 답변 보기",
+    keywords: ["커뮤니티", "피드", "community", "다른사람"] },
+  { label: "면접 후기",     path: "/reviews",    description: "기업별 면접 후기",
+    keywords: ["면접 후기", "후기", "review"] },
+  { label: "레벨 체크",     path: "/levelcheck", description: "내 실력 레벨 측정",
+    keywords: ["레벨", "체크", "level"] },
+];
+
+function matchPages(query) {
+  const q = query.trim().toLowerCase();
+  if (!q) return [];
+  return PAGE_CATALOG.filter(p =>
+    p.label.toLowerCase().includes(q) ||
+    p.description.toLowerCase().includes(q) ||
+    p.keywords.some(k => k.toLowerCase().includes(q))
+  ).slice(0, 4);
+}
 
 const MenuItem = ({ label, onClick, danger }) => (
   <div
@@ -35,7 +67,66 @@ const TopNav = () => {
   const { isLoggedIn, isAdmin, auth, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [searchInput, setSearchInput] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [questionResults, setQuestionResults] = useState([]);
+  const [questionLoading, setQuestionLoading] = useState(false);
   const menuRef = useRef(null);
+  const searchBoxRef = useRef(null);
+
+  const trimmed = searchInput.trim();
+  const pageMatches = matchPages(trimmed);
+
+  const submitSearch = () => {
+    if (trimmed) {
+      navigate(`/questions?q=${encodeURIComponent(trimmed)}`);
+    } else {
+      navigate("/questions");
+    }
+    setSearchOpen(false);
+  };
+
+  // 검색어 변경 시 debounce로 서버에서 문제 검색
+  useEffect(() => {
+    if (!trimmed) {
+      setQuestionResults([]);
+      setQuestionLoading(false);
+      return;
+    }
+    setQuestionLoading(true);
+    const handle = setTimeout(() => {
+      questionApi.list({ q: trimmed, size: 5 })
+        .then(res => setQuestionResults(res.content || []))
+        .catch(() => setQuestionResults([]))
+        .finally(() => setQuestionLoading(false));
+    }, 200);
+    return () => clearTimeout(handle);
+  }, [trimmed]);
+
+  // 외부 클릭 / ESC로 드롭다운 닫기
+  useEffect(() => {
+    if (!searchOpen) return;
+    const onMouseDown = (e) => {
+      if (searchBoxRef.current && !searchBoxRef.current.contains(e.target)) {
+        setSearchOpen(false);
+      }
+    };
+    const onKey = (e) => { if (e.key === "Escape") setSearchOpen(false); };
+    document.addEventListener("mousedown", onMouseDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onMouseDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [searchOpen]);
+
+  // 라우트가 바뀌면 드롭다운 닫기
+  useEffect(() => { setSearchOpen(false); }, [pathname]);
+
+  const goSearchTarget = (path) => {
+    setSearchOpen(false);
+    navigate(path);
+  };
 
   const isActive = (path) => {
     if (path === "/questions") return ["/questions", "/solve", "/feedback"].includes(pathname);
@@ -98,18 +189,86 @@ const TopNav = () => {
         <div className="dp-nav-right">
           {isLoggedIn ? (
             <>
-              {/* 검색바 — 모바일에서는 CSS로 숨김 */}
-              <div className="dp-nav-search" style={{
-                alignItems: "center", gap: 8,
-                padding: "8px 12px", background: "var(--gray-50)",
-                border: "1px solid var(--gray-200)", borderRadius: 8,
-                width: 280, color: "var(--gray-500)", fontSize: 13, cursor: "pointer"
-              }}>
-                <IconSearch size={16} />
-                <span>문제, 키워드, 회사를 검색해보세요</span>
-                <span style={{ marginLeft: "auto", fontSize: 11, padding: "1px 6px",
-                  background: "#fff", border: "1px solid var(--gray-200)",
-                  borderRadius: 4, fontFamily: "var(--font-mono)" }}>⌘K</span>
+              {/* 검색바 — pill 스타일 + 드롭다운 */}
+              <div ref={searchBoxRef} className="dp-nav-search-wrap" role="search">
+                <div className="dp-nav-search-pill">
+                  <span
+                    onClick={submitSearch}
+                    style={{ display: "inline-flex", cursor: "pointer", color: "#9BA3B2" }}
+                    aria-label="검색"
+                  >
+                    <IconSearch size={18} />
+                  </span>
+                  <input
+                    type="search"
+                    className="dp-nav-search-input"
+                    placeholder="문제·이력서 첨삭·커뮤니티 검색"
+                    value={searchInput}
+                    onChange={(e) => { setSearchInput(e.target.value); setSearchOpen(true); }}
+                    onFocus={() => setSearchOpen(true)}
+                    onKeyDown={(e) => { if (e.key === "Enter") submitSearch(); }}
+                  />
+                </div>
+
+                {searchOpen && trimmed && (
+                  <div className="dp-nav-search-dropdown">
+                    {/* 페이지 매칭 섹션 */}
+                    {pageMatches.length > 0 && (
+                      <div className="dp-search-section">
+                        <div className="dp-search-section-title">페이지</div>
+                        {pageMatches.map(p => (
+                          <div
+                            key={p.path}
+                            className="dp-search-row"
+                            onClick={() => goSearchTarget(p.path)}
+                          >
+                            <div className="dp-search-row-title">{p.label}</div>
+                            <div className="dp-search-row-desc">{p.description}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* 문제 매칭 섹션 */}
+                    <div className="dp-search-section">
+                      <div className="dp-search-section-title">문제</div>
+                      {questionLoading ? (
+                        <div className="dp-search-empty">검색 중...</div>
+                      ) : questionResults.length === 0 ? (
+                        <div className="dp-search-empty">
+                          "{trimmed}" 관련 문제가 없습니다.
+                        </div>
+                      ) : (
+                        <>
+                          {questionResults.map(q => (
+                            <div
+                              key={q.id}
+                              className="dp-search-row"
+                              onClick={() => goSearchTarget(`/solve?id=${q.id}`)}
+                            >
+                              <div className="dp-search-row-title">{q.title}</div>
+                              <div className="dp-search-row-desc">
+                                {q.questionCategoryName ?? "문제"} · {q.difficulty ?? ""}
+                              </div>
+                            </div>
+                          ))}
+                          <div
+                            className="dp-search-row dp-search-row-more"
+                            onClick={submitSearch}
+                          >
+                            "{trimmed}" 검색 결과 전체 보기 →
+                          </div>
+                        </>
+                      )}
+                    </div>
+
+                    {pageMatches.length === 0 && questionResults.length === 0 && !questionLoading && (
+                      <div className="dp-search-empty-global">
+                        매칭되는 페이지나 문제가 없습니다. Enter로 문제 검색 페이지 이동.
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* 알림 */}

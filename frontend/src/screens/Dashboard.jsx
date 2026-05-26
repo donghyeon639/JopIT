@@ -6,8 +6,8 @@ import {
   TopNav, DifficultyBadge, CategoryBadge
 } from "../components/Components.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
-import { getJobNews, getCompanyThemes, getTechTrends } from "../data/mockData.js";
-import { meApi, techTrendApi } from "../api/questionApi.js";
+import { getTechTrends } from "../data/mockData.js";
+import { meApi, techTrendApi, jobPostingApi } from "../api/questionApi.js";
 
 /* ──────────────────────────────────────────────
  *  앱 아이콘 스타일 — 솔리드 컬러 배경 + 흰색 아이콘
@@ -301,12 +301,12 @@ const Dashboard = () => {
   const { auth } = useAuth();
   const nickname = auth?.nickname ?? "회원";
   const jobCategoryName = auth?.jobCategoryName ?? "백엔드";
-  const jobNews = getJobNews(jobCategoryName);
-  const companyThemes = getCompanyThemes(jobCategoryName);
 
   const [stats, setStats] = useState(null);
   const [techTrends, setTechTrends] = useState([]);
   const [trendsLoading, setTrendsLoading] = useState(true);
+  const [publicJobs, setPublicJobs] = useState([]);
+  const [publicJobsLoading, setPublicJobsLoading] = useState(true);
 
   useEffect(() => {
     meApi.stats().then(setStats).catch(() => {});
@@ -318,6 +318,14 @@ const Dashboard = () => {
       .then(setTechTrends)
       .catch(() => setTechTrends(getTechTrends(jobCategoryName)))
       .finally(() => setTrendsLoading(false));
+  }, []);
+
+  useEffect(() => {
+    setPublicJobsLoading(true);
+    jobPostingApi.public()
+      .then((res) => setPublicJobs(res?.content ?? []))
+      .catch(() => setPublicJobs([]))
+      .finally(() => setPublicJobsLoading(false));
   }, []);
 
   const tiles = [
@@ -449,10 +457,10 @@ const Dashboard = () => {
           ))}
         </div>
 
-        {/* ─── 지금 주목할 채용 정보 ─── */}
+        {/* ─── 공공 채용 (청년일자리지원 OpenAPI) ─── */}
         <SectionHeader
-          title="지금 주목할 채용 정보"
-          hint={`${jobCategoryName} 직군 추천`}
+          title="공공 채용"
+          hint="청년일자리지원 OpenAPI"
         />
         <div style={{
           display: "grid",
@@ -460,32 +468,88 @@ const Dashboard = () => {
           gap: 16,
           marginBottom: 48
         }}>
-          {jobNews.map((n) => (
-            <div key={n.id} style={{
-              position: "relative",
-              borderRadius: 16,
-              overflow: "hidden",
-              aspectRatio: "16 / 11",
-              background: n.gradient,
-              padding: 24,
-              cursor: "pointer",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between"
+          {publicJobsLoading ? (
+            Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} style={{
+                border: "1px solid #ECEEF2", borderRadius: 14,
+                height: 168,
+                background: "linear-gradient(90deg, #F3F4F6 25%, #E9EAEC 50%, #F3F4F6 75%)",
+                backgroundSize: "200% 100%",
+                animation: "shimmer 1.4s infinite",
+              }} />
+            ))
+          ) : publicJobs.length === 0 ? (
+            <div style={{
+              gridColumn: "1 / -1",
+              padding: "32px 24px",
+              border: "1px dashed #ECEEF2",
+              borderRadius: 14,
+              textAlign: "center",
+              color: "#7B8290",
+              fontSize: 14,
             }}>
-              <div style={{ fontSize: 36, lineHeight: 1 }}>{n.emoji}</div>
-              <div>
-                <div style={{
-                  fontSize: 20, fontWeight: 700, color: "#fff",
-                  marginBottom: 6, lineHeight: 1.3
-                }}>{n.title}</div>
-                <div style={{
-                  fontSize: 13, color: "rgba(255,255,255,0.85)",
-                  lineHeight: 1.5
-                }}>{n.subtitle}</div>
-              </div>
+              아직 공공 채용 공고가 동기화되지 않았습니다. 잠시 후 다시 확인해주세요.
             </div>
-          ))}
+          ) : (
+            publicJobs.map((job) => (
+              <div
+                key={job.id}
+                onClick={() => job.applyUrl && window.open(job.applyUrl, "_blank", "noopener,noreferrer")}
+                style={{
+                  border: "1px solid #ECEEF2",
+                  borderRadius: 14,
+                  background: "#fff",
+                  padding: "20px 22px",
+                  cursor: job.applyUrl ? "pointer" : "default",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 10,
+                  transition: "all 0.18s ease",
+                }}
+                onMouseEnter={(e) => {
+                  if (!job.applyUrl) return;
+                  e.currentTarget.style.borderColor = "#C7D7FA";
+                  e.currentTarget.style.boxShadow = "0 4px 16px rgba(74,123,247,0.1)";
+                  e.currentTarget.style.transform = "translateY(-2px)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = "#ECEEF2";
+                  e.currentTarget.style.boxShadow = "none";
+                  e.currentTarget.style.transform = "translateY(0)";
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{
+                    fontSize: 11, fontWeight: 700,
+                    padding: "3px 10px", borderRadius: 999,
+                    background: "#E5F7F2", color: "#059669",
+                  }}>공공기관</span>
+                  {job.expiresAt && (
+                    <span style={{ fontSize: 11, color: "#9BA3B2" }}>
+                      ~ {String(job.expiresAt).slice(0, 10)}
+                    </span>
+                  )}
+                </div>
+                <div style={{
+                  fontSize: 15, fontWeight: 700, color: "#1A1F2E",
+                  lineHeight: 1.45,
+                  overflow: "hidden", textOverflow: "ellipsis",
+                  display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
+                }}>{job.title}</div>
+                <div style={{ fontSize: 13, color: "#4A7BF7", fontWeight: 600 }}>
+                  {job.company}
+                </div>
+                <div style={{
+                  display: "flex", flexWrap: "wrap", gap: 6,
+                  fontSize: 12, color: "#7B8290",
+                }}>
+                  {job.location && <span>📍 {job.location}</span>}
+                  {job.employmentType && <span>· {job.employmentType}</span>}
+                  {job.careerLevel && <span>· {job.careerLevel}</span>}
+                </div>
+              </div>
+            ))
+          )}
         </div>
 
         {/* ─── 요즘 IT 기술 트렌드 ─── */}
@@ -531,48 +595,6 @@ const Dashboard = () => {
           }
         `}</style>
 
-        {/* ─── 테마로 살펴보는 회사/포지션 ─── */}
-        <SectionHeader
-          title="테마로 살펴보는 회사/포지션"
-          hint={`${jobCategoryName} 직군 추천`}
-        />
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(4, 1fr)",
-          gap: 16,
-          marginBottom: 56
-        }}>
-          {companyThemes.map((t) => (
-            <div key={t.id} style={{
-              border: "1px solid #ECEEF2",
-              borderRadius: 14,
-              overflow: "hidden",
-              cursor: "pointer",
-              background: "#fff"
-            }}>
-              <div style={{
-                aspectRatio: "16 / 9",
-                background: t.bg,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 56
-              }}>
-                {t.icon}
-              </div>
-              <div style={{ padding: "16px 18px" }}>
-                <div style={{
-                  fontSize: 15, fontWeight: 700, color: "#1A1F2E",
-                  marginBottom: 4
-                }}>{t.title}</div>
-                <div style={{
-                  fontSize: 13, color: "#7B8290",
-                  lineHeight: 1.4
-                }}>{t.subtitle}</div>
-              </div>
-            </div>
-          ))}
-        </div>
 
         {/* 하단 — 가벼운 요약 (이어가기 + 추천 문제) */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
