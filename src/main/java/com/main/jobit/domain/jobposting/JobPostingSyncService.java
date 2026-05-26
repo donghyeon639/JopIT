@@ -53,18 +53,25 @@ public class JobPostingSyncService {
     }
 
     private void syncFromFetcher(JobPostingFetcher fetcher) {
-        log.info("채용 동기화 시작: source={}", fetcher.source());
+        JobSource source;
+        try {
+            source = JobSource.valueOf(fetcher.source());
+        } catch (IllegalArgumentException e) {
+            log.warn("알 수 없는 채용 소스 식별자: {}. 동기화 skip.", fetcher.source());
+            return;
+        }
+        log.info("채용 동기화 시작: source={}", source);
         int upserted = 0;
         for (int page = 1; page <= MAX_PAGES; page++) {
             List<NormalizedJob> jobs = fetcher.fetchPage(page, NUM_OF_ROWS);
             if (jobs.isEmpty()) break;
             for (NormalizedJob job : jobs) {
-                upsert(fetcher.source(), job);
+                upsert(source, job);
                 upserted++;
             }
             if (jobs.size() < NUM_OF_ROWS) break;
         }
-        log.info("채용 동기화 완료: source={}, upserted={}", fetcher.source(), upserted);
+        log.info("채용 동기화 완료: source={}, upserted={}", source, upserted);
     }
 
     private void upsert(JobSource source, NormalizedJob job) {

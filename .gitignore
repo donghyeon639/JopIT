@@ -4,7 +4,13 @@ build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
-application.properties
+
+# 시크릿이 들어 있는 로컬 전용 설정만 무시 (커밋용 application.properties는 트래킹)
+application-local.properties
+application-secret.properties
+.env
+.env.*
+!.env.example
 
 ### STS ###
 .apt_generated
