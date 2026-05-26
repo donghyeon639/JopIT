@@ -1,9 +1,10 @@
 import { http } from "./client.js";
 
-function buildQuestionListQuery({ categoryId, difficulty, page = 0, size = 10 } = {}) {
+function buildQuestionListQuery({ categoryId, difficulty, q, page = 0, size = 10 } = {}) {
   const params = new URLSearchParams();
   if (categoryId) params.set("categoryId", categoryId);
   if (difficulty) params.set("difficulty", difficulty);
+  if (q && q.trim()) params.set("q", q.trim());
   params.set("page", page);
   params.set("size", size);
   return params.toString();
@@ -40,4 +41,17 @@ export const meApi = {
 export const techTrendApi = {
   list:   ()   => http.get("/tech-trends"),
   detail: (id) => http.get(`/tech-trends/${id}`),
+};
+
+function buildJobPostingQuery({ source, page = 0, size = 9 } = {}) {
+  const params = new URLSearchParams();
+  if (source) params.set("source", source);
+  params.set("page", page);
+  params.set("size", size);
+  return params.toString();
+}
+
+export const jobPostingApi = {
+  list:   (opts = {}) => http.get(`/job-postings?${buildJobPostingQuery(opts)}`),
+  public: ()          => http.get(`/job-postings?${buildJobPostingQuery({ source: "PUBLIC_DATA" })}`),
 };

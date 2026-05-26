@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   IconChevronRight, IconCheck, IconSearch,
   TopNav, DifficultyBadge, CategoryBadge
@@ -14,13 +14,15 @@ const DIFF_LABEL   = { LOW: "하", MID: "중", HIGH: "상" };
 const QuestionList = () => {
   const navigate   = useNavigate();
   const { isLoggedIn } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlQuery = searchParams.get("q") ?? "";
 
   const [categories,   setCategories]   = useState([]);
   const [questions,    setQuestions]    = useState([]);
   const [myAnswerQIds, setMyAnswerQIds] = useState(new Set());
   const [activeCatId,  setActiveCatId]  = useState(null);   // null = 전체
   const [activeDiff,   setActiveDiff]   = useState("전체");
-  const [search,       setSearch]       = useState("");
+  const [searchInput,  setSearchInput]  = useState(urlQuery);  // 입력창 상태(타이핑 중)
   const [loading,      setLoading]      = useState(true);
   const [fetchError,   setFetchError]   = useState(false);
 
@@ -35,13 +37,20 @@ const QuestionList = () => {
     categoryApi.list().then(setCategories).catch(console.error);
   }, []);
 
-  // 문제 목록 (필터 또는 페이지 변경 시 재조회)
+  // URL의 q가 외부에서 바뀌면 (TopNav 검색 등) 입력칸에도 반영
+  useEffect(() => {
+    setSearchInput(urlQuery);
+    setPage(0);
+  }, [urlQuery]);
+
+  // 문제 목록 (필터/검색어/페이지 변경 시 서버 검색 재조회)
   useEffect(() => {
     setLoading(true);
     setFetchError(false);
     questionApi.list({
       categoryId: activeCatId || undefined,
       difficulty: activeDiff === "전체" ? undefined : activeDiff,
+      q: urlQuery || undefined,
       page,
       size: PAGE_SIZE,
     })
@@ -57,7 +66,7 @@ const QuestionList = () => {
       })
       .catch(() => setFetchError(true))
       .finally(() => setLoading(false));
-  }, [activeCatId, activeDiff, page]);
+  }, [activeCatId, activeDiff, urlQuery, page]);
 
   // 내가 푼 문제 ID 세트 (로그인한 경우만, 첫 로드 시)
   useEffect(() => {
@@ -77,15 +86,16 @@ const QuestionList = () => {
     setPage(0);
   };
 
-  // 클라이언트 검색 — 서버 검색 미지원이라 현재 페이지 내에서만 동작
-  const visibleQuestions = useMemo(() => {
-    if (!search.trim()) return questions;
-    const q = search.toLowerCase();
-    return questions.filter(item =>
-      item.title.toLowerCase().includes(q) ||
-      item.questionCategoryName?.toLowerCase().includes(q)
-    );
-  }, [questions, search]);
+  // 검색 — Enter 또는 검색 아이콘 클릭 시 URL의 q 업데이트 → 서버 재조회
+  const applySearch = () => {
+    const next = searchInput.trim();
+    const params = new URLSearchParams(searchParams);
+    if (next) params.set("q", next);
+    else params.delete("q");
+    setSearchParams(params);
+  };
+
+  const visibleQuestions = questions;
 
   return (
     <div className="dp-screen" style={{ width: "100%", minHeight: "100vh", background: "var(--gray-50)" }}>
@@ -123,15 +133,23 @@ const QuestionList = () => {
         <div className="card" style={{ padding: 20, marginBottom: 16 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
             <div style={{ flex: 1, position: "relative" }}>
-              <div style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "var(--gray-400)" }}>
+              <div
+                onClick={applySearch}
+                style={{
+                  position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)",
+                  color: "var(--gray-400)", cursor: "pointer",
+                }}
+                aria-label="검색 실행"
+              >
                 <IconSearch size={16} />
               </div>
               <input
                 className="input"
                 style={{ paddingLeft: 40 }}
-                placeholder="현재 페이지 내에서 검색"
-                value={search}
-                onChange={e => setSearch(e.target.value)}
+                placeholder="문제 제목으로 검색 (Enter)"
+                value={searchInput}
+                onChange={e => setSearchInput(e.target.value)}
+                onKeyDown={e => { if (e.key === "Enter") applySearch(); }}
               />
             </div>
           </div>
@@ -177,8 +195,8 @@ const QuestionList = () => {
             </div>
           ) : visibleQuestions.length === 0 ? (
             <div style={{ padding: 60, textAlign: "center", color: "var(--gray-400)" }}>
-              {search
-                ? "현재 페이지에서 검색 결과가 없습니다."
+              {urlQuery
+                ? `"${urlQuery}" 검색 결과가 없습니다.`
                 : "조건에 맞는 문제가 없습니다."}
             </div>
           ) : (
