@@ -5,8 +5,9 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
-# 시크릿 파일 — git 추적 금지
+# 시크릿 파일 — git 추적 금지 (단 테스트용 더미 설정은 예외)
 application.properties
+!src/test/resources/application.properties
 application-local.properties
 application-secret.properties
 .env
