@@ -1,7 +1,6 @@
 package com.main.jobit.infra.publicjob.alio;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.main.jobit.domain.jobposting.JobSource;
 import com.main.jobit.infra.publicjob.JobPostingFetcher;
 import com.main.jobit.infra.publicjob.NormalizedJob;
 import lombok.extern.slf4j.Slf4j;
@@ -77,8 +76,8 @@ public class AlioJobPostingFetcher implements JobPostingFetcher {
     }
 
     @Override
-    public JobSource source() {
-        return JobSource.PUBLIC_DATA;
+    public String source() {
+        return "PUBLIC_DATA";
     }
 
     @Override
