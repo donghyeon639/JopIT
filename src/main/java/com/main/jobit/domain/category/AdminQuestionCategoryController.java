@@ -4,6 +4,7 @@ import com.main.jobit.domain.category.QuestionCategory;
 import com.main.jobit.domain.category.QuestionCategoryRepository;
 import com.main.jobit.domain.category.dto.QuestionCategoryRequest;
 import com.main.jobit.domain.category.dto.QuestionCategoryResponse;
+import com.main.jobit.global.security.Admin;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,6 +18,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/admin/question-categories")
 @RequiredArgsConstructor
+@Admin
 public class AdminQuestionCategoryController {
 
     private final QuestionCategoryRepository questionCategoryRepository;

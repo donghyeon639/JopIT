@@ -4,6 +4,7 @@ import com.main.jobit.domain.job.JobCategory;
 import com.main.jobit.domain.job.JobCategoryRepository;
 import com.main.jobit.domain.job.dto.JobCategoryRequest;
 import com.main.jobit.domain.job.dto.JobCategoryResponse;
+import com.main.jobit.global.security.Admin;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +22,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/admin/categories")
 @RequiredArgsConstructor
+@Admin
 public class AdminCategoryController {
 
     private final JobCategoryRepository categoryRepository;

@@ -13,6 +13,9 @@ import ResumeFeedback from "./screens/ResumeFeedback.jsx";
 import MyAnswers from "./screens/MyAnswers.jsx";
 import LearningStatus from "./screens/LearningStatus.jsx";
 import Community from "./screens/Community.jsx";
+import StudyBoard from "./screens/StudyBoard.jsx";
+import StudyDetail from "./screens/StudyDetail.jsx";
+import StudyForm from "./screens/StudyForm.jsx";
 import AnswerDetail from "./screens/AnswerDetail.jsx";
 import TechTrendDetail from "./screens/TechTrendDetail.jsx";
 import ProtectedRoute from "./components/common/ProtectedRoute.jsx";
@@ -50,6 +53,10 @@ export default function App() {
         <Route path="/my/answers" element={<ProtectedRoute><MyAnswers /></ProtectedRoute>} />
         <Route path="/my/status" element={<ProtectedRoute><LearningStatus /></ProtectedRoute>} />
         <Route path="/community" element={<ProtectedRoute><Community /></ProtectedRoute>} />
+        <Route path="/study" element={<ProtectedRoute><StudyBoard /></ProtectedRoute>} />
+        <Route path="/study/new" element={<ProtectedRoute><StudyForm /></ProtectedRoute>} />
+        <Route path="/study/:id" element={<ProtectedRoute><StudyDetail /></ProtectedRoute>} />
+        <Route path="/study/:id/edit" element={<ProtectedRoute><StudyForm /></ProtectedRoute>} />
         <Route path="/answer" element={<ProtectedRoute><AnswerDetail /></ProtectedRoute>} />
         <Route path="/tech-trends/:id" element={<ProtectedRoute><TechTrendDetail /></ProtectedRoute>} />
 

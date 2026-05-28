@@ -9,6 +9,7 @@ const NAV_LINKS = [
   { label: "홈",      path: "/dashboard" },
   { label: "문제",    path: "/questions" },
   { label: "커뮤니티", path: "/community" },
+  { label: "스터디",   path: "/study"     },
   { label: "면접 후기", path: "/reviews"   },
 ];
 
@@ -27,6 +28,8 @@ const PAGE_CATALOG = [
     keywords: ["학습", "현황", "통계", "stats"] },
   { label: "커뮤니티",      path: "/community",  description: "다른 사람의 답변 보기",
     keywords: ["커뮤니티", "피드", "community", "다른사람"] },
+  { label: "스터디",        path: "/study",      description: "기술면접 스터디·프로젝트 팀원 모집",
+    keywords: ["스터디", "study", "모집", "팀원", "프로젝트", "사이드"] },
   { label: "면접 후기",     path: "/reviews",    description: "기업별 면접 후기",
     keywords: ["면접 후기", "후기", "review"] },
   { label: "레벨 체크",     path: "/levelcheck", description: "내 실력 레벨 측정",
