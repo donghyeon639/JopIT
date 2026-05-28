@@ -85,7 +85,7 @@ public class SocialAuthService {
     }
 
     private TokenResponse toTokenResponse(Users user) {
-        String token = jwtTokenProvider.createAccessToken(user.getUsername());
+        String token = jwtTokenProvider.createAccessToken(user.getUsername(), user.getRole().name());
         return TokenResponse.builder()
                 .accessToken(token)
                 .tokenType("Bearer")

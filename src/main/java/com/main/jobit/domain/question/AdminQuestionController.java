@@ -4,6 +4,7 @@ import com.main.jobit.domain.question.dto.QuestionCreateRequest;
 import com.main.jobit.domain.question.dto.QuestionDetailResponse;
 import com.main.jobit.domain.question.dto.QuestionPagedResponse;
 import com.main.jobit.domain.question.dto.QuestionSummaryResponse;
+import com.main.jobit.global.security.Admin;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -26,6 +27,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/admin/questions")
 @RequiredArgsConstructor
+@Admin
 public class AdminQuestionController {
 
     private final QuestionService questionService;

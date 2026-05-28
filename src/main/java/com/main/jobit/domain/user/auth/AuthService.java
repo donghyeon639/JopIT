@@ -49,7 +49,7 @@ public class AuthService {
 
         userRepository.save(user);
 
-        String token = jwtTokenProvider.createAccessToken(user.getUsername());
+        String token = jwtTokenProvider.createAccessToken(user.getUsername(), user.getRole().name());
         return TokenResponse.builder()
                 .accessToken(token)
                 .tokenType("Bearer")
@@ -70,7 +70,7 @@ public class AuthService {
             throw new BadCredentialsException("아이디 또는 비밀번호가 올바르지 않습니다.");
         }
 
-        String token = jwtTokenProvider.createAccessToken(user.getUsername());
+        String token = jwtTokenProvider.createAccessToken(user.getUsername(), user.getRole().name());
         return TokenResponse.builder()
                 .accessToken(token)
                 .tokenType("Bearer")

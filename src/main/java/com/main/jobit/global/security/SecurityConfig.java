@@ -35,7 +35,6 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtTokenProvider jwtTokenProvider;
-    private final CustomUserDetailsService userDetailsService;
     private final ObjectProvider<SocialAuthService> socialAuthServiceProvider;
 
     @Value("${app.social.redirect-uri:http://localhost:5173/social/callback}")
@@ -72,7 +71,7 @@ public class SecurityConfig {
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter(jwtTokenProvider, userDetailsService);
+        return new JwtAuthenticationFilter(jwtTokenProvider);
     }
 
     @Bean

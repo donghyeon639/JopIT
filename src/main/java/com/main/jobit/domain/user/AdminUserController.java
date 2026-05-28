@@ -4,6 +4,7 @@ import com.main.jobit.domain.user.Role;
 import com.main.jobit.domain.user.UserRepository;
 import com.main.jobit.domain.user.Users;
 import com.main.jobit.domain.user.dto.UserResponse;
+import com.main.jobit.global.security.Admin;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +20,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/admin/users")
 @RequiredArgsConstructor
+@Admin
 public class AdminUserController {
 
     private final UserRepository userRepository;

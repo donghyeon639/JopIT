@@ -1,5 +1,6 @@
 package com.main.jobit.domain.jobposting;
 
+import com.main.jobit.global.security.Admin;
 import com.main.jobit.infra.publicjob.alio.AlioJobPostingFetcher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/admin/job-postings")
 @RequiredArgsConstructor
+@Admin
 public class AdminJobPostingController {
 
     private final JobPostingSyncService jobPostingSyncService;

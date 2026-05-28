@@ -25,10 +25,11 @@ public class JwtTokenProvider {
         this.accessTokenValidMs = accessTokenValiditySeconds * 1000;
     }
 
-    public String createAccessToken(String username) {
+    public String createAccessToken(String username, String role) {
         Date now = new Date();
         return Jwts.builder()
                 .subject(username)
+                .claim("role", role)
                 .issuedAt(now)
                 .expiration(new Date(now.getTime() + accessTokenValidMs))
                 .signWith(secretKey)
@@ -37,6 +38,10 @@ public class JwtTokenProvider {
 
     public String getUsernameFromToken(String token) {
         return parseClaims(token).getSubject();
+    }
+
+    public String getRoleFromToken(String token) {
+        return parseClaims(token).get("role", String.class);
     }
 
     public boolean validateToken(String token) {
