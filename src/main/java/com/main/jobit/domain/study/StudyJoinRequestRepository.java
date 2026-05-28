@@ -19,8 +19,14 @@ public interface StudyJoinRequestRepository extends JpaRepository<StudyJoinReque
     /** 정원 카운트(ACCEPTED) 또는 PENDING 통계 단건 조회. */
     long countByStudyIdAndStatus(UUID studyId, JoinRequestStatus status);
 
-    /** 작성자 화면용 — 한 스터디의 신청자 전체 목록 (최신순). */
-    List<StudyJoinRequest> findByStudyIdOrderByCreatedAtDesc(UUID studyId);
+    /** 작성자 화면용 — 한 스터디의 신청자 전체 목록 (최신순). applicant LAZY 페치를 JOIN FETCH로 해소. */
+    @Query("""
+            SELECT r FROM StudyJoinRequest r
+              JOIN FETCH r.applicant
+             WHERE r.study.id = :studyId
+             ORDER BY r.createdAt DESC
+            """)
+    List<StudyJoinRequest> findByStudyIdWithApplicant(@Param("studyId") UUID studyId);
 
     /**
      * 목록 화면용 — N개 스터디의 ACCEPTED 신청 수를 한 번의 GROUP BY로 조회.
