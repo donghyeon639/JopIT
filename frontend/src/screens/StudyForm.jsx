@@ -4,8 +4,8 @@ import { TopNav, IconArrowLeft } from "../components/Components.jsx";
 import { studyApi, TECH_STACKS, POSITIONS, MODES } from "../api/studyApi.js";
 
 const TYPES = [
-  { id: "study",   label: "스터디",  emoji: "✏️" },
-  { id: "project", label: "프로젝트", emoji: "📁" },
+  { id: "STUDY",   label: "스터디",  emoji: "✏️" },
+  { id: "PROJECT", label: "프로젝트", emoji: "📁" },
 ];
 
 /* ── 다중선택 칩 ── */
@@ -40,7 +40,7 @@ const StudyForm = () => {
   const isEdit = !!id;
 
   const [form, setForm] = useState({
-    type: "study", title: "", summary: "",
+    type: "STUDY", title: "", summary: "",
     techStacks: [], positions: [],
     mode: "ONLINE", capacity: 4, deadline: today(),
   });
@@ -56,7 +56,7 @@ const StudyForm = () => {
       .then((s) => {
         if (!s) { setError("스터디를 찾을 수 없어요."); return; }
         setForm({
-          type: s.type ?? "study",
+          type: s.type ?? "STUDY",
           title: s.title ?? "",
           summary: s.summary ?? "",
           techStacks: s.techStacks ?? [],
