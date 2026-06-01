@@ -18,9 +18,11 @@ const isNew = (createdAt) =>
   createdAt && (Date.now() - new Date(createdAt).getTime()) < 86400000 * 2;
 
 const TYPE_META = {
-  study:   { label: "스터디",  emoji: "✏️", badge: "badge-blue" },
-  project: { label: "프로젝트", emoji: "📁", badge: "badge-gray" },
+  STUDY:   { label: "스터디",  emoji: "✏️", badge: "badge-blue" },
+  PROJECT: { label: "프로젝트", emoji: "📁", badge: "badge-gray" },
 };
+
+const typeMeta = (t) => TYPE_META[t] ?? TYPE_META.STUDY;
 
 /* ── 마감 D-day pill ── */
 const DeadlinePill = ({ deadline, status }) => {
@@ -42,7 +44,7 @@ const DeadlinePill = ({ deadline, status }) => {
 };
 
 const TypeBadge = ({ type }) => {
-  const m = TYPE_META[type] ?? TYPE_META.study;
+  const m = typeMeta(type);
   return <span className={`badge ${m.badge}`}>{m.emoji} {m.label}</span>;
 };
 
@@ -154,9 +156,9 @@ const clamp2 = {
 };
 
 const TABS = [
-  { id: "all", label: "전체" },
-  { id: "project", label: "프로젝트" },
-  { id: "study", label: "스터디" },
+  { id: "all",     label: "전체" },
+  { id: "PROJECT", label: "프로젝트" },
+  { id: "STUDY",   label: "스터디" },
 ];
 
 const StudyBoard = () => {
@@ -190,8 +192,9 @@ const StudyBoard = () => {
   }, [tab, techStack, position, mode, recruitingOnly, bookmarkOnly, search]);
 
   const toggleBookmark = (s) => {
-    studyApi.toggleBookmark(s.id).then(() => {
-      setList((prev) => prev.map((x) => (x.id === s.id ? { ...x, bookmarked: !x.bookmarked } : x)));
+    studyApi.toggleBookmark(s.id).then((res) => {
+      const next = res?.bookmarked ?? !s.bookmarked;
+      setList((prev) => prev.map((x) => (x.id === s.id ? { ...x, bookmarked: next } : x)));
     });
   };
 

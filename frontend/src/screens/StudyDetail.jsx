@@ -14,8 +14,8 @@ const dday = (deadline) => {
 };
 
 const TYPE_META = {
-  study:   { label: "스터디",  emoji: "✏️", badge: "badge-blue" },
-  project: { label: "프로젝트", emoji: "📁", badge: "badge-gray" },
+  STUDY:   { label: "스터디",  emoji: "✏️", badge: "badge-blue" },
+  PROJECT: { label: "프로젝트", emoji: "📁", badge: "badge-gray" },
 };
 
 const InfoRow = ({ label, children }) => (
@@ -70,8 +70,9 @@ const StudyDetail = () => {
     );
   }
 
-  const meta = TYPE_META[study.type] ?? TYPE_META.study;
-  const isOwner = auth?.nickname === study.author;
+  const meta = TYPE_META[study.type] ?? TYPE_META.STUDY;
+  // 백엔드 StudyDetailResponse.owner 플래그를 우선 사용, 없으면 닉네임 fallback
+  const isOwner = typeof study.owner === "boolean" ? study.owner : (auth?.nickname === study.author);
   const isClosed = study.status === "CLOSED";
   const isFull = study.applied >= study.capacity;
   const d = dday(study.deadline);
@@ -80,8 +81,9 @@ const StudyDetail = () => {
   const handleBookmark = async () => {
     setBusy(true);
     try {
-      await studyApi.toggleBookmark(study.id);
-      setStudy((prev) => ({ ...prev, bookmarked: !prev.bookmarked }));
+      const res = await studyApi.toggleBookmark(study.id);
+      const next = res?.bookmarked ?? !study.bookmarked;
+      setStudy((prev) => ({ ...prev, bookmarked: next }));
     } finally { setBusy(false); }
   };
 
@@ -89,8 +91,8 @@ const StudyDetail = () => {
     if (isClosed || isFull || applyStatus) return;
     setBusy(true);
     try {
-      await studyApi.apply(study.id, {});
-      setApplyStatus("PENDING");
+      const res = await studyApi.apply(study.id, {});
+      setApplyStatus(res?.status ?? "PENDING");
     } catch (e) {
       alert(e.message || "신청에 실패했어요.");
     } finally { setBusy(false); }
