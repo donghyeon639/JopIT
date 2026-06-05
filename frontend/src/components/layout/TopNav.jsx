@@ -10,6 +10,7 @@ const NAV_LINKS = [
   { label: "문제",    path: "/questions" },
   { label: "커뮤니티", path: "/community" },
   { label: "스터디",   path: "/study"     },
+  { label: "AI 면접",  path: "/interview" },
   { label: "면접 후기", path: "/reviews"   },
 ];
 
@@ -22,6 +23,8 @@ const PAGE_CATALOG = [
     keywords: ["문제", "기술면접", "cs", "풀기", "questions"] },
   { label: "이력서 첨삭",   path: "/resume",     description: "AI가 이력서를 첨삭",
     keywords: ["이력서", "첨삭", "resume", "cv"] },
+  { label: "AI 모의 면접",  path: "/interview",  description: "이력서 기반 음성 모의 면접",
+    keywords: ["면접", "모의면접", "interview", "화상", "음성", "인성", "심층"] },
   { label: "내 답변",       path: "/my/answers", description: "내가 작성한 답변 모음",
     keywords: ["내답변", "답변", "내가 푼", "my answers"] },
   { label: "학습 현황",     path: "/my/status",  description: "내 풀이 통계와 연속 학습",

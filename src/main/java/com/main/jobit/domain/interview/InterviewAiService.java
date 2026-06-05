@@ -124,6 +124,60 @@ public class InterviewAiService {
                 questionRepository.findById(questionId).ifPresent(InterviewQuestion::markEvalFailed));
     }
 
+    @Async
+    public void generateOverallFeedback(UUID sessionId) {
+        OverallContext ctx = txTemplate.execute(status -> {
+            InterviewSession s = sessionRepository.findById(sessionId).orElse(null);
+            if (s == null) return null;
+            List<QA> qas = questionRepository.findBySessionIdOrderByOrderNoAsc(sessionId).stream()
+                    .map(q -> new QA(q.getOrderNo(), q.getContent(), q.getTranscript()))
+                    .toList();
+            return new OverallContext(s.getJobCategory().getName(), s.getInterviewType(), qas);
+        });
+        if (ctx == null) {
+            log.warn("종합 피드백 생성 skip — 세션 없음: {}", sessionId);
+            return;
+        }
+
+        final String feedback;
+        try {
+            feedback = llmPort.generate(buildOverallPrompt(ctx));
+        } catch (Exception e) {
+            log.error("종합 피드백 LLM 호출 실패 (sessionId={}): {}", sessionId, e.getMessage());
+            return;
+        }
+
+        txTemplate.executeWithoutResult(status ->
+                sessionRepository.findById(sessionId).ifPresent(s -> s.applyOverallFeedback(feedback)));
+        log.info("종합 피드백 생성 완료 (sessionId={})", sessionId);
+    }
+
+    private String buildOverallPrompt(OverallContext ctx) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("당신은 ").append(ctx.jobCategory()).append(" 직무 ").append(ctx.interviewType().label())
+          .append(" 면접관입니다. 아래는 한 지원자의 모의 면접 전체 질문과 답변입니다.\n");
+        sb.append("전체를 종합해 지원자에게 도움이 되는 총평을 작성해주세요.\n\n");
+
+        for (QA qa : ctx.qas()) {
+            sb.append("## Q").append(qa.order()).append(". ").append(qa.question()).append("\n");
+            sb.append("답변: ");
+            String t = qa.transcript();
+            sb.append(t == null || t.isBlank() ? "(답변 없음)" : t).append("\n\n");
+        }
+
+        sb.append("## 종합 평가 형식 (마크다운, 아래 순서대로)\n");
+        sb.append("### 1. 종합 총평\n전체 인상을 2~3문장으로.\n\n");
+        sb.append("### 2. 두드러진 강점\n- bullet 2~3개.\n\n");
+        sb.append("### 3. 공통적으로 보완할 점\n- 답변 전반에서 반복되는 약점을 bullet 2~3개.\n\n");
+        sb.append("### 4. 다음 학습 추천\n- 이 지원자가 다음에 준비하면 좋을 주제를 bullet 2~3개.\n\n");
+        sb.append("- 모든 답변은 한국어.\n- 실제 답변 내용에 근거할 것.\n");
+        return sb.toString();
+    }
+
+    private record OverallContext(String jobCategory, InterviewType interviewType, List<QA> qas) {}
+
+    private record QA(int order, String question, String transcript) {}
+
     private String buildQuestionPrompt(PromptContext ctx) {
         String typeGuide = ctx.interviewType() == InterviewType.PERSONALITY
                 ? "지원자의 경험, 가치관, 협업과 갈등 해결 방식, 지원 동기 등을 이력서 내용에 근거해 묻는 인성 면접 질문"

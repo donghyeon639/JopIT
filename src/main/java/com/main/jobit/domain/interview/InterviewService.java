@@ -3,6 +3,7 @@ package com.main.jobit.domain.interview;
 import com.main.jobit.domain.interview.dto.AnswerSubmitRequest;
 import com.main.jobit.domain.interview.dto.InterviewQuestionResponse;
 import com.main.jobit.domain.interview.dto.InterviewSessionResponse;
+import com.main.jobit.domain.interview.dto.InterviewSessionSummaryResponse;
 import com.main.jobit.domain.job.JobCategory;
 import com.main.jobit.domain.job.JobCategoryRepository;
 import com.main.jobit.domain.resume.ResumeTextExtractor;
@@ -101,6 +102,47 @@ public class InterviewService {
         interviewAiService.evaluateAnswer(questionId);
 
         return getSession(username, sessionId);
+    }
+
+    /**
+     * 면접 종료 — 모든 질문이 답변된 경우에만 비동기로 종합 피드백을 생성한다.
+     */
+    public InterviewSessionResponse completeSession(String username, UUID sessionId) {
+        Users user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "존재하지 않는 사용자입니다."));
+        InterviewSession session = sessionRepository.findById(sessionId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "면접 세션을 찾을 수 없습니다."));
+        if (!session.getUser().getId().equals(user.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "본인의 면접만 종료할 수 있습니다.");
+        }
+
+        List<InterviewQuestion> questions = questionRepository.findBySessionIdOrderByOrderNoAsc(sessionId);
+        if (questions.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "생성된 질문이 없습니다.");
+        }
+        boolean anyUnanswered = questions.stream().anyMatch(q -> q.getStatus() == QuestionStatus.WAITING);
+        if (anyUnanswered) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "아직 답변하지 않은 질문이 있습니다.");
+        }
+
+        interviewAiService.generateOverallFeedback(sessionId);
+
+        return getSession(username, sessionId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<InterviewSessionSummaryResponse> getMySessions(String username) {
+        Users user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "존재하지 않는 사용자입니다."));
+        return sessionRepository.findByUserIdWithJobCategory(user.getId()).stream()
+                .map(s -> new InterviewSessionSummaryResponse(
+                        s.getId(),
+                        s.getJobCategory().getName(),
+                        s.getInterviewType().name(),
+                        s.getInterviewType().label(),
+                        s.getStatus().name(),
+                        s.getCreatedAt()))
+                .toList();
     }
 
     @Transactional(readOnly = true)

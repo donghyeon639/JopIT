@@ -2,6 +2,7 @@ package com.main.jobit.domain.interview;
 
 import com.main.jobit.domain.interview.dto.AnswerSubmitRequest;
 import com.main.jobit.domain.interview.dto.InterviewSessionResponse;
+import com.main.jobit.domain.interview.dto.InterviewSessionSummaryResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -56,5 +58,22 @@ public class InterviewController {
         InterviewSessionResponse response = interviewService.submitAnswer(
                 userDetails.getUsername(), sessionId, questionId, request);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+    }
+
+    /** 면접 종료 → 종합 피드백 비동기 생성. 202와 함께 현재 상태 반환(overallFeedback은 폴링으로 채워짐). */
+    @PostMapping("/sessions/{sessionId}/complete")
+    public ResponseEntity<InterviewSessionResponse> complete(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable UUID sessionId) {
+        InterviewSessionResponse response = interviewService.completeSession(
+                userDetails.getUsername(), sessionId);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+    }
+
+    /** 내 면접 기록 목록. */
+    @GetMapping("/sessions")
+    public ResponseEntity<List<InterviewSessionSummaryResponse>> mySessions(
+            @AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(interviewService.getMySessions(userDetails.getUsername()));
     }
 }
