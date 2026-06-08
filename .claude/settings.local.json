@@ -4,7 +4,8 @@
       "Bash(git mv *)",
       "Bash(mkdir -p domain/user/auth)",
       "Bash(rmdir auth *)",
-      "Bash(git -C C:/prephub/prephub log --oneline --all -- \"src/main/resources/application.properties\")"
+      "Bash(git -C C:/prephub/prephub log --oneline --all -- \"src/main/resources/application.properties\")",
+      "PowerShell(npm run *)"
     ]
   }
 }
