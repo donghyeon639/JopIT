@@ -5,7 +5,12 @@ import { PrepBot } from "../components/PrepBot.jsx";
 import { JOB_CATEGORIES } from "../constants/jobs.js";
 import { interviewApi } from "../api/interviewApi.js";
 import { useSpeechRecognition } from "../hooks/useSpeechRecognition.js";
+import { useSpeechSynthesis } from "../hooks/useSpeechSynthesis.js";
 import { useCamera } from "../hooks/useCamera.js";
+
+// 면접 시작 시 면접관이 건네는 인사말. 첫 질문(자기소개) 앞에 음성으로 먼저 재생된다.
+const GREETING =
+  "안녕하세요, 오늘 모의 면접을 진행할 프렙쌤입니다. 너무 긴장하지 마시고 평소처럼 편하게 답변해주세요. 그럼 시작하겠습니다.";
 
 const MAX_FILE_MB = 10;
 const ACCEPTED_EXT = [".pdf", ".docx", ".doc", ".rtf", ".odt", ".txt", ".md"];
@@ -42,7 +47,12 @@ const Interview = () => {
   const fileInputRef = useRef(null);
 
   const stt = useSpeechRecognition({ lang: "ko-KR" });
+  const tts = useSpeechSynthesis({ lang: "ko-KR" });
   const camera = useCamera();
+
+  // 첫 질문에는 인사말을 앞에 붙여 면접관이 자기소개를 요청하도록 한다.
+  const speechFor = (index, content) =>
+    index === 0 ? `${GREETING} ${content}` : content;
 
   const questions = session?.questions ?? [];
   const currentQuestion = questions[currentIndex];
@@ -95,6 +105,13 @@ const Interview = () => {
     stt.stop();
   }, [currentQuestion?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  /* 새 질문이 표시되면 면접관이 음성으로 읽어준다 (첫 질문은 인사말부터) */
+  useEffect(() => {
+    if (step !== "interview" || !currentQuestion) return;
+    tts.speak(speechFor(currentIndex, currentQuestion.content));
+    return () => tts.cancel();
+  }, [currentQuestion?.id, step]); // eslint-disable-line react-hooks/exhaustive-deps
+
   /* 카운트다운 — 0이 되면 자동 제출 */
   useEffect(() => {
     if (!answering) return;
@@ -144,6 +161,7 @@ const Interview = () => {
 
   const startAnswering = () => {
     setError("");
+    tts.cancel(); // 면접관 음성이 남아 있으면 멈추고 답변을 받는다
     stt.reset();
     setSecondsLeft(ANSWER_SECONDS);
     setAnswering(true);
@@ -203,6 +221,7 @@ const Interview = () => {
   };
 
   const restart = () => {
+    tts.cancel();
     stt.stop();
     stt.reset();
     setSession(null);
@@ -296,7 +315,37 @@ const Interview = () => {
               </div>
 
               <div className="card" style={{ padding: 22, marginBottom: 14 }}>
-                <div className="t-xs" style={{ color: "var(--gray-500)", marginBottom: 8 }}>면접관 질문</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+                  <div style={{ flexShrink: 0 }}>
+                    <PrepBot expression={tts.speaking ? "wave" : "teach"} size={40} />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "var(--gray-800)", display: "flex", alignItems: "center", gap: 6 }}>
+                      프렙쌤 면접관
+                      {tts.speaking && <SpeakingDots />}
+                    </div>
+                    <div className="t-xs" style={{ color: "var(--gray-500)" }}>
+                      {tts.speaking ? "말하는 중…" : "면접관 질문"}
+                    </div>
+                  </div>
+                  {tts.supported && (
+                    <button
+                      onClick={() => tts.speak(speechFor(currentIndex, currentQuestion.content))}
+                      title="다시 듣기"
+                      style={{
+                        flexShrink: 0, width: 36, height: 36, borderRadius: 999, cursor: "pointer",
+                        border: "1px solid var(--gray-300)", background: "#fff", fontSize: 16,
+                        display: "flex", alignItems: "center", justifyContent: "center"
+                      }}>
+                      🔊
+                    </button>
+                  )}
+                </div>
+                {currentIndex === 0 && (
+                  <p className="t-sm" style={{ color: "var(--gray-600)", lineHeight: 1.6, marginBottom: 10 }}>
+                    {GREETING}
+                  </p>
+                )}
                 <div className="t-h3" style={{ lineHeight: 1.5 }}>{currentQuestion.content}</div>
               </div>
 
@@ -660,6 +709,19 @@ const Chip = ({ active, onClick, children }) => (
     background: active ? "var(--blue-500)" : "#fff",
     color: active ? "#fff" : "var(--gray-700)"
   }}>{children}</button>
+);
+
+/* 면접관이 말하는 중임을 보여주는 작은 인디케이터 */
+const SpeakingDots = () => (
+  <span style={{ display: "inline-flex", alignItems: "center", gap: 3 }}>
+    {[0, 1, 2].map((i) => (
+      <span key={i} style={{
+        width: 5, height: 5, borderRadius: 999, background: "var(--blue-500)",
+        display: "inline-block", animation: `pb-speak 1s ${i * 0.15}s infinite ease-in-out`
+      }} />
+    ))}
+    <style>{`@keyframes pb-speak { 0%,100% { opacity:.3; transform:translateY(0) } 50% { opacity:1; transform:translateY(-2px) } }`}</style>
+  </span>
 );
 
 const ErrorBox = ({ children }) => (

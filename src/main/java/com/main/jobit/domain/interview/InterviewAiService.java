@@ -21,6 +21,10 @@ public class InterviewAiService {
 
     private static final int QUESTION_COUNT = 5;
 
+    /** 모든 면접은 자기소개로 시작한다. AI가 만든 질문 앞에 워밍업 질문으로 고정 삽입된다. */
+    private static final String SELF_INTRO_QUESTION =
+            "먼저 너무 긴장하지 마시고, 1분 내외로 간단하게 자기소개 부탁드립니다.";
+
     private final LlmPort llmPort;
     private final InterviewSessionRepository sessionRepository;
     private final InterviewQuestionRepository questionRepository;
@@ -50,37 +54,57 @@ public class InterviewAiService {
         }
 
         // 2) LLM 호출은 트랜잭션 밖에서.
-        final List<String> questions;
+        log.info("면접 질문 생성 시작 (sessionId={}, jobCategory={}, type={})",
+                sessionId, ctx.jobCategory(), ctx.interviewType());
+        long startNanos = System.nanoTime();
+        // LLM 호출·파싱·저장 어느 단계에서 실패하든 세션을 반드시 종료 상태로 만든다.
+        // (어딘가에서 예외가 새어 나가면 세션이 QUESTIONS_PENDING에 영구 고착돼 프런트가 무한 폴링한다.)
         try {
             String raw = llmPort.generate(buildQuestionPrompt(ctx));
-            questions = parseQuestions(raw, QUESTION_COUNT);
-        } catch (Exception e) {
-            log.error("면접 질문 생성 LLM 호출 실패 (sessionId={}): {}", sessionId, e.getMessage());
-            markFailed(sessionId);
-            return;
-        }
+            List<String> questions = parseQuestions(raw, QUESTION_COUNT);
 
-        if (questions.isEmpty()) {
-            log.error("면접 질문 파싱 결과 0개 (sessionId={})", sessionId);
-            markFailed(sessionId);
-            return;
-        }
+            if (questions.isEmpty()) {
+                log.error("면접 질문 파싱 결과 0개 (sessionId={}) — 원문: {}", sessionId, abbreviate(raw));
+                markFailed(sessionId);
+                return;
+            }
 
-        // 3) 결과 저장은 다시 짧은 트랜잭션으로.
-        txTemplate.executeWithoutResult(status -> {
-            InterviewSession s = sessionRepository.findById(sessionId).orElse(null);
-            if (s == null) return;
-            int order = 1;
-            for (String q : questions) {
+            // 결과 저장은 다시 짧은 트랜잭션으로.
+            txTemplate.executeWithoutResult(status -> {
+                InterviewSession s = sessionRepository.findById(sessionId).orElse(null);
+                if (s == null) return;
+                int order = 1;
+                // 첫 질문은 항상 자기소개(워밍업)로 고정. 이후 AI가 만든 맞춤 질문이 이어진다.
                 questionRepository.save(InterviewQuestion.builder()
                         .session(s)
                         .orderNo(order++)
-                        .content(q)
+                        .content(SELF_INTRO_QUESTION)
                         .build());
-            }
-            s.markQuestionsReady();
-        });
-        log.info("면접 질문 생성 완료 (sessionId={}, count={})", sessionId, questions.size());
+                for (String q : questions) {
+                    questionRepository.save(InterviewQuestion.builder()
+                            .session(s)
+                            .orderNo(order++)
+                            .content(q)
+                            .build());
+                }
+                s.markQuestionsReady();
+            });
+
+            long elapsedMs = (System.nanoTime() - startNanos) / 1_000_000;
+            log.info("면접 질문 생성 완료 (sessionId={}, count={}, {}ms 경과)",
+                    sessionId, questions.size() + 1, elapsedMs); // +1: 고정 자기소개 질문 포함
+        } catch (Exception e) {
+            long elapsedMs = (System.nanoTime() - startNanos) / 1_000_000;
+            log.error("면접 질문 생성 실패 (sessionId={}, {}ms 경과): {}",
+                    sessionId, elapsedMs, e.getMessage(), e);
+            markFailed(sessionId);
+        }
+    }
+
+    private String abbreviate(String s) {
+        if (s == null || s.isBlank()) return "(빈 응답)";
+        String trimmed = s.strip();
+        return trimmed.length() > 300 ? trimmed.substring(0, 300) + "…(생략)" : trimmed;
     }
 
     private void markFailed(UUID sessionId) {
