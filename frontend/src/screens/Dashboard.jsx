@@ -335,7 +335,7 @@ const Dashboard = () => {
     { icon: <LevelIcon />,     label: "레벨 체크",    onClick: () => navigate("/levelcheck"),bg: "#DC2626" },
     { icon: <RocketIcon />,    label: "학습 현황",    onClick: () => navigate("/my/status"), bg: "#DB2777" },
     { icon: <CommunityIcon />, label: "커뮤니티",     onClick: () => navigate("/community"), bg: "#0284C7" },
-    { icon: <AICoachIcon />,   label: "AI 면접 코칭", badge: "N",                            bg: "#059669" },
+    { icon: <AICoachIcon />,   label: "AI 면접 코칭", onClick: () => navigate("/interview"), badge: "N", bg: "#059669" },
     { icon: <BookmarkIcon />,  label: "즐겨찾기",                                             bg: "#EA580C" },
     { icon: <StatIcon />,      label: "직군별 통계",                                         bg: "#7C3AED" },
     { icon: <RecommendIcon />, label: "추천 문제",    onClick: () => navigate("/questions"), bg: "#E11D48" },
