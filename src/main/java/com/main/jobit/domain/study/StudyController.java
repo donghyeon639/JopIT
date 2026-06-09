@@ -28,6 +28,11 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * 스터디 모집글 REST 컨트롤러 (/api/studies).
+ * 모든 엔드포인트는 인증 사용자를 전제로 하며, @AuthenticationPrincipal로 현재 사용자를 받아 Service에 위임한다.
+ * 검증/권한/예외는 Service 계층에서 처리하고, 컨트롤러는 요청 매핑·HTTP 상태 코드만 담당한다.
+ */
 @RestController
 @RequestMapping("/api/studies")
 @RequiredArgsConstructor
@@ -35,6 +40,7 @@ public class StudyController {
 
     private final StudyService studyService;
 
+    // 목록 조회. 모든 필터 파라미터는 선택(required=false)이며, 페이징 기본값은 12건·최신순.
     @GetMapping
     public ResponseEntity<Page<StudyListItemResponse>> list(
             @RequestParam(required = false) StudyType type,
@@ -51,12 +57,15 @@ public class StudyController {
                 userDetails.getUsername(), pageable));
     }
 
+    // 인기 모집글(조회수 상위 6건). 페이징 없는 고정 길이 리스트.
+    // 주의: literal "popular"가 "{id}"(UUID)보다 먼저 선언되어 매핑 충돌이 없도록 위치시킴.
     @GetMapping("/popular")
     public ResponseEntity<List<StudyListItemResponse>> popular(
             @AuthenticationPrincipal UserDetails userDetails) {
         return ResponseEntity.ok(studyService.popular(userDetails.getUsername()));
     }
 
+    // 상세 조회. Service에서 조회수 +1 side effect가 발생한다.
     @GetMapping("/{id}")
     public ResponseEntity<StudyDetailResponse> detail(
             @PathVariable UUID id,
@@ -64,6 +73,7 @@ public class StudyController {
         return ResponseEntity.ok(studyService.detail(id, userDetails.getUsername()));
     }
 
+    // 모집글 생성. 검증 통과 시 201 Created + 생성된 상세 응답.
     @PostMapping
     public ResponseEntity<StudyDetailResponse> create(
             @RequestBody @Valid StudyCreateRequest request,
@@ -72,6 +82,7 @@ public class StudyController {
                 .body(studyService.create(request, userDetails.getUsername()));
     }
 
+    // 모집글 수정(전체 교체, PUT). 작성자 권한·마감 여부는 Service에서 검증.
     @PutMapping("/{id}")
     public ResponseEntity<StudyDetailResponse> update(
             @PathVariable UUID id,
@@ -80,6 +91,7 @@ public class StudyController {
         return ResponseEntity.ok(studyService.update(id, request, userDetails.getUsername()));
     }
 
+    // 모집 마감. 상태만 바꾸는 부분 변경이라 PATCH, 응답 본문이 없어 204 No Content.
     @PatchMapping("/{id}/close")
     public ResponseEntity<Void> close(
             @PathVariable UUID id,

@@ -24,6 +24,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
+// 관리자 전용 문제 CRUD API. 클래스 레벨 @Admin AOP로 모든 핸들러가 관리자 권한을 요구한다.
+// 조회 로직(list/detail)은 일반 컨트롤러와 동일한 QuestionService를 재사용한다.
 @RestController
 @RequestMapping("/api/admin/questions")
 @RequiredArgsConstructor
@@ -32,6 +34,7 @@ public class AdminQuestionController {
 
     private final QuestionService questionService;
 
+    // 관리자 목록 조회. 일반 화면(기본 10개)보다 큰 기본 20개로 둬 관리 작업 효율을 높임.
     @GetMapping
     public ResponseEntity<QuestionPagedResponse<QuestionSummaryResponse>> list(
             @RequestParam(required = false) UUID categoryId,
@@ -41,16 +44,19 @@ public class AdminQuestionController {
         return ResponseEntity.ok(questionService.list(categoryId, difficulty, q, pageable));
     }
 
+    // 단건 상세 조회(편집 폼 진입용).
     @GetMapping("/{id}")
     public ResponseEntity<QuestionDetailResponse> detail(@PathVariable UUID id) {
         return ResponseEntity.ok(questionService.getById(id));
     }
 
+    // 문제 생성. @Valid로 요청 바디 검증 후 성공 시 201 Created.
     @PostMapping
     public ResponseEntity<QuestionDetailResponse> create(@RequestBody @Valid QuestionCreateRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(questionService.create(request));
     }
 
+    // 문제 수정(전체 필드 교체). 생성과 동일한 요청 DTO를 재사용한다.
     @PutMapping("/{id}")
     public ResponseEntity<QuestionDetailResponse> update(
             @PathVariable UUID id,
@@ -58,6 +64,7 @@ public class AdminQuestionController {
         return ResponseEntity.ok(questionService.update(id, request));
     }
 
+    // 문제 삭제. 성공 시 본문 없이 204 No Content.
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         questionService.delete(id);

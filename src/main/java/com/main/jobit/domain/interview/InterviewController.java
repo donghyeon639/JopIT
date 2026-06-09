@@ -21,6 +21,10 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.UUID;
 
+// AI 화상 면접 REST 진입점. 질문 생성/답변 평가/종합 피드백이 모두 비동기라
+// 변경 계열 엔드포인트는 결과를 기다리지 않고 202(ACCEPTED) + 현재 상태를 돌려주며,
+// 프런트는 GET 세션 조회로 폴링해 완료를 확인하는 구조다.
+// 모든 메서드는 @AuthenticationPrincipal로 로그인 사용자를 받아 서비스 계층에서 본인 소유 검증을 거친다.
 @RestController
 @RequestMapping("/api/interview")
 @RequiredArgsConstructor
