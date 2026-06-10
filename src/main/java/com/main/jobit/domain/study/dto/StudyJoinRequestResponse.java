@@ -10,6 +10,11 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+/**
+ * 참여 신청 응답 DTO. 작성자가 보는 신청자 목록/처리 결과에 사용된다.
+ * applicantNickname을 함께 내려주기 위해 from()에서 applicant를 참조하므로,
+ * 목록 조회 시 applicant가 JOIN FETCH로 미리 로딩되어 있어야 LazyInitializationException을 피한다.
+ */
 @Getter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

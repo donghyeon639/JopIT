@@ -12,6 +12,9 @@ import java.lang.annotation.Target;
   실제 권한 검증은 {@link AdminAspect}가 수행
   /api/admin/** URL 규칙(SecurityConfig)과 함께 다층 방어로 동작
  */
+
+// @Target: 타입(컨트롤러 전체)과 메서드 양쪽에 부착 가능.
+// @Retention(RUNTIME): AOP가 런타임에 어노테이션 존재를 읽어 권한 검증해야 하므로 런타임까지 유지.
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented

@@ -18,6 +18,10 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * 스터디 북마크 REST 컨트롤러 (/api/studies).
+ * StudyController와 같은 base path를 공유하므로, 경로 충돌이 없도록 segment 설계에 주의한다(아래 /bookmarks 참고).
+ */
 @RestController
 @RequestMapping("/api/studies")
 @RequiredArgsConstructor

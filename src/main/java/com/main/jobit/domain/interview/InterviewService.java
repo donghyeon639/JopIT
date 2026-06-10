@@ -20,10 +20,14 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+// 면접 도메인의 동기 흐름(검증·권한·상태 전이)을 담당하는 서비스.
+// LLM 호출 같은 느린/비동기 작업은 InterviewAiService에 위임하고, 여기선 트리거만 한다.
+// 본인 소유 검증은 모든 진입 메서드가 공통으로 수행한다.
 @Service
 @RequiredArgsConstructor
 public class InterviewService {
 
+    // 이력서 본문 길이 가드. 너무 짧으면 질문 생성이 빈약하고, 너무 길면 프롬프트 토큰 비용/한도가 문제된다.
     private static final int MIN_RESUME_CHARS = 50;
     private static final int MAX_RESUME_CHARS = 50_000;
 
@@ -130,6 +134,7 @@ public class InterviewService {
         return getSession(username, sessionId);
     }
 
+    // 내 면접 기록 목록. 질문 본문 없이 메타만 요약 DTO로 변환(fetch join으로 N+1 회피).
     @Transactional(readOnly = true)
     public List<InterviewSessionSummaryResponse> getMySessions(String username) {
         Users user = userRepository.findByUsername(username)
@@ -145,6 +150,7 @@ public class InterviewService {
                 .toList();
     }
 
+    // 세션 단건 조회(질문/답변/평가/상태 포함). 프런트 폴링의 주 엔드포인트이며 본인 소유만 허용.
     @Transactional(readOnly = true)
     public InterviewSessionResponse getSession(String username, UUID sessionId) {
         InterviewSession session = sessionRepository.findById(sessionId)
@@ -158,6 +164,7 @@ public class InterviewService {
         return toResponse(session, questions);
     }
 
+    // 요청 문자열을 InterviewType으로 변환. 대소문자/공백을 정규화하고, 매핑 실패는 잘못된 enum이 아니라 400으로 돌려준다.
     private InterviewType parseType(String raw) {
         if (raw == null || raw.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "면접 종류를 선택해주세요.");
@@ -169,6 +176,7 @@ public class InterviewService {
         }
     }
 
+    // 추출된 이력서 본문 길이 검증(MIN/MAX 가드). 파일은 받았으나 텍스트 추출이 빈약한 경우를 여기서 걸러낸다.
     private void validateResumeLength(String text) {
         if (text.length() < MIN_RESUME_CHARS) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -180,6 +188,7 @@ public class InterviewService {
         }
     }
 
+    // 엔티티 → 응답 DTO 매핑 공통 헬퍼. interviewType은 식별자(name)와 표기용(label)을 함께 내려 화면 분기/표시를 분리한다.
     private InterviewSessionResponse toResponse(InterviewSession s, List<InterviewQuestion> questions) {
         List<InterviewQuestionResponse> qs = questions.stream()
                 .map(q -> new InterviewQuestionResponse(

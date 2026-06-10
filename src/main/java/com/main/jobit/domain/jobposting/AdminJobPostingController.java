@@ -24,13 +24,16 @@ public class AdminJobPostingController {
 
     private final JobPostingSyncService jobPostingSyncService;
     private final JobPostingRepository jobPostingRepository;
+    // 진단(diagnose)에서 원문을 직접 보려고 구체 어댑터(ALIO)를 주입. 일반 동기화는 포트(List<Fetcher>)로 충분하지만
+    // 이 진단 엔드포인트는 ALIO 응답 원문을 그대로 확인하는 용도라 의도적으로 구현체를 직접 참조한다.
     private final AlioJobPostingFetcher alioJobPostingFetcher;
 
     /** 즉시 동기화 실행. 60초 initialDelay/6시간 fixedRate 무시하고 바로 돌린다. */
+    // 운영 중 새 공고를 곧장 반영하고 싶을 때 사용. 실행 전/후 건수 차이를 반환해 몇 건 추가됐는지 바로 확인할 수 있다.
     @PostMapping("/sync")
     public ResponseEntity<Map<String, Object>> sync() {
         long before = jobPostingRepository.count();
-        jobPostingSyncService.syncAll();
+        jobPostingSyncService.syncAll();  // 동기화 후 내부에서 캐시 무효화까지 수행
         long after = jobPostingRepository.count();
         return ResponseEntity.ok(Map.of(
                 "alioConfigured", alioJobPostingFetcher.isConfigured(),
@@ -41,6 +44,7 @@ public class AdminJobPostingController {
     }
 
     /** ALIO 응답 원문 진단. 파싱 전 raw JSON/문자열 그대로 노출 (관리자만). */
+    // 동기화 건수가 안 늘 때 외부 API 자체가 무엇을 주는지 확인하는 디버깅 용도. 기본은 소량(3건)만 조회.
     @GetMapping("/diagnose")
     public ResponseEntity<Map<String, Object>> diagnose(
             @RequestParam(defaultValue = "1") int pageNo,

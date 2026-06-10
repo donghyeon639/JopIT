@@ -34,12 +34,12 @@ public class StudyDetailResponse {
     private long viewCount;
     private Set<String> techStacks;
     private Set<String> positions;
-    private UUID authorId;
+    private UUID authorId;          // 작성자 식별자. 프론트 소유권 판단/마이그레이션 대비용.
     private String author;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private boolean bookmarked;
-    private boolean owner;
+    private boolean bookmarked;     // 조회 사용자의 북마크 여부
+    private boolean owner;          // 조회 사용자가 작성자 본인인지 — 수정/마감/신청관리 버튼 노출 제어에 사용
 
     public StudyDetailResponse(UUID id, StudyType type, String title, String summary,
                                StudyMode mode, int capacity, long applied,
@@ -68,6 +68,7 @@ public class StudyDetailResponse {
         this.owner = owner;
     }
 
+    // 엔티티 + 사용자 컨텍스트(applied/bookmarked/owner)를 합쳐 상세 DTO 생성.
     public static StudyDetailResponse from(Study s, long applied, boolean bookmarked, boolean owner) {
         return StudyDetailResponse.builder()
                 .id(s.getId())

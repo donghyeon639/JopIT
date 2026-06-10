@@ -72,7 +72,7 @@ prephub/
 │   ├── JobitApplication.java
 │   ├── ai/                     # AI 추상화
 │   │   ├── port/LlmPort.java        # LLM 포트(도메인이 의존하는 인터페이스)
-│   │   ├── claude/ClaudeCliService.java  # 현재 어댑터(Claude CLI)
+│   │   ├── bedrock/BedrockLlmService.java  # 현재 어댑터(AWS Bedrock)
 │   │   └── feedback/AiFeedbackService.java
 │   ├── domain/
 │   │   ├── user/               # 회원, 인증(JWT), 소셜 로그인(OAuth2)

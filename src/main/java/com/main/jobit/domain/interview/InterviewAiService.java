@@ -30,6 +30,8 @@ public class InterviewAiService {
     private final InterviewQuestionRepository questionRepository;
     private final TransactionTemplate txTemplate;
 
+    // TransactionTemplate을 직접 생성하기 위해 @RequiredArgsConstructor 대신 수동 생성자를 둔다.
+    // 이렇게 하면 LLM 호출 구간은 트랜잭션 밖, 읽기/쓰기 구간만 짧은 프로그래밍 방식 트랜잭션으로 감쌀 수 있다.
     public InterviewAiService(LlmPort llmPort,
                               InterviewSessionRepository sessionRepository,
                               InterviewQuestionRepository questionRepository,
@@ -40,6 +42,8 @@ public class InterviewAiService {
         this.txTemplate = new TransactionTemplate(txManager);
     }
 
+    // 세션 생성 직후 비동기로 면접 질문 5개를 만들어 저장하고 세션을 READY로 전이한다.
+    // 호출 측(createSession)은 세션 커밋 후 트리거하므로, 이 스레드는 이미 커밋된 행을 안전하게 읽는다.
     @Async
     public void generateQuestions(UUID sessionId) {
         // 1) 프롬프트에 필요한 데이터만 짧은 트랜잭션으로 읽어온다 (LAZY 연관 접근 위해).
@@ -101,17 +105,21 @@ public class InterviewAiService {
         }
     }
 
+    // 파싱 실패 등으로 LLM 원문을 로그에 남길 때, 과도하게 긴 출력으로 로그가 오염되지 않도록 앞 300자만 잘라낸다.
     private String abbreviate(String s) {
         if (s == null || s.isBlank()) return "(빈 응답)";
         String trimmed = s.strip();
         return trimmed.length() > 300 ? trimmed.substring(0, 300) + "…(생략)" : trimmed;
     }
 
+    // 질문 생성 실패를 별도 짧은 트랜잭션으로 기록. 세션이 사라졌으면 조용히 무시(ifPresent).
     private void markFailed(UUID sessionId) {
         txTemplate.executeWithoutResult(status ->
                 sessionRepository.findById(sessionId).ifPresent(InterviewSession::markQuestionsFailed));
     }
 
+    // 답변 제출 직후 비동기로 그 한 턴을 평가해 결과를 저장(EVAL_PENDING → EVAL_DONE).
+    // 실패 시 EVAL_FAILED로 돌려 사용자가 같은 질문에 재답변할 수 있게 한다.
     @Async
     public void evaluateAnswer(UUID questionId) {
         // 1) 평가 프롬프트에 필요한 데이터를 짧은 트랜잭션으로 읽는다.
@@ -143,11 +151,14 @@ public class InterviewAiService {
         log.info("면접 답변 평가 완료 (questionId={})", questionId);
     }
 
+    // 평가 실패를 별도 짧은 트랜잭션으로 기록. 질문이 사라졌으면 조용히 무시(ifPresent).
     private void markEvalFailed(UUID questionId) {
         txTemplate.executeWithoutResult(status ->
                 questionRepository.findById(questionId).ifPresent(InterviewQuestion::markEvalFailed));
     }
 
+    // 면접 종료 시 호출. 전체 Q&A를 모아 종합 총평을 만들고 세션에 반영하며 COMPLETED로 전이한다.
+    // 개별 평가와 달리 실패해도 별도 실패 상태가 없어, 호출 측에서 재시도(다시 종료 요청)로 복구한다.
     @Async
     public void generateOverallFeedback(UUID sessionId) {
         OverallContext ctx = txTemplate.execute(status -> {
@@ -176,6 +187,7 @@ public class InterviewAiService {
         log.info("종합 피드백 생성 완료 (sessionId={})", sessionId);
     }
 
+    // 종합 피드백 프롬프트 조립. 전체 Q&A를 마크다운으로 나열하고 출력 형식(총평/강점/보완점/추천)을 강제한다.
     private String buildOverallPrompt(OverallContext ctx) {
         StringBuilder sb = new StringBuilder();
         sb.append("당신은 ").append(ctx.jobCategory()).append(" 직무 ").append(ctx.interviewType().label())
@@ -198,10 +210,14 @@ public class InterviewAiService {
         return sb.toString();
     }
 
+    // 종합 피드백용 컨텍스트. 트랜잭션 안에서 미리 추출해, LLM 호출 시점엔 LAZY 연관 접근이 없도록 한다.
     private record OverallContext(String jobCategory, InterviewType interviewType, List<QA> qas) {}
 
+    // 종합 피드백 프롬프트에 들어갈 질문-답변 한 쌍의 스냅샷.
     private record QA(int order, String question, String transcript) {}
 
+    // 질문 생성 프롬프트 조립. 면접 종류(인성/심층)에 따라 질문 성격 가이드를 바꾸고,
+    // 이력서 본문은 코드블록으로 감싸 "지시문이 아니라 소재"임을 명시해 프롬프트 인젝션을 방어한다.
     private String buildQuestionPrompt(PromptContext ctx) {
         String typeGuide = ctx.interviewType() == InterviewType.PERSONALITY
                 ? "지원자의 경험, 가치관, 협업과 갈등 해결 방식, 지원 동기 등을 이력서 내용에 근거해 묻는 인성 면접 질문"
@@ -239,11 +255,13 @@ public class InterviewAiService {
                 .toList();
     }
 
+    // 모델이 형식 지시를 어겨 번호/머리기호를 붙였을 때를 대비한 방어적 정리. 한 줄 앞쪽 마커만 제거한다.
     private String stripLeadingMarker(String line) {
         // "1." "1)" "Q1." "Q1:" "- " "• " "* " 같은 머리표기 제거
         return line.replaceFirst("^\\s*(?:[Qq]?\\d+[.)\\]:]|[-•*])\\s*", "").trim();
     }
 
+    // 단일 답변 평가 프롬프트 조립. 답변 텍스트도 코드블록으로 감싸 인젝션을 막고, 출력 형식(총평/잘한점/보완점/모범방향)을 고정한다.
     private String buildEvalPrompt(EvalContext ctx) {
         StringBuilder sb = new StringBuilder();
         sb.append("당신은 ").append(ctx.jobCategory()).append(" 직무 ").append(ctx.interviewType().label())
@@ -268,7 +286,9 @@ public class InterviewAiService {
         return sb.toString();
     }
 
+    // 질문 생성용 컨텍스트 스냅샷. 트랜잭션 안에서 미리 뽑아 두어 LLM 호출 중 LAZY 접근을 피한다.
     private record PromptContext(String resumeText, String jobCategory, InterviewType interviewType) {}
 
+    // 답변 평가용 컨텍스트 스냅샷(질문 본문 + 제출 답변 포함). 동일하게 트랜잭션 밖 LLM 호출을 위해 분리한다.
     private record EvalContext(String jobCategory, InterviewType interviewType, String question, String transcript) {}
 }

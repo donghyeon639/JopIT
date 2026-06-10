@@ -12,9 +12,13 @@ import java.util.List;
  */
 public interface JobPostingFetcher {
 
+    // 이 어댑터가 대표하는 소스 식별 문자열(도메인 enum 이름과 동일하게 맞춘다).
     String source();
 
+    // 호출에 필요한 설정(예: API 키)이 갖춰졌는지. false면 SyncService가 호출을 건너뛴다.
     boolean isConfigured();
 
+    // 페이지 단위로 채용 데이터를 가져와 NormalizedJob 목록으로 변환해 반환한다.
+    // 페이징·정규화·소스별 예외 처리는 각 어댑터 책임. 실패 시 빈 목록 반환(예외를 밖으로 던지지 않는 게 컨벤션).
     List<NormalizedJob> fetchPage(int pageNo, int numOfRows);
 }

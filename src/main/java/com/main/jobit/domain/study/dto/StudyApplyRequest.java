@@ -6,6 +6,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * 참여 신청 요청 DTO. body가 통째로 생략될 수 있어(컨트롤러에서 null이면 빈 객체로 대체) 모든 필드가 선택 입력이다.
+ */
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PUBLIC)
