@@ -35,7 +35,7 @@ C:\prephub\prephub\
 
 ### 백엔드 도메인 구조 (`com.main.jobit`)
 ```
-ai/                  # AI 추상화: port(LlmPort) + claude(ClaudeCliService) + feedback(AiFeedbackService)
+ai/                  # AI 추상화: port(LlmPort) + bedrock(BedrockLlmService) + feedback(AiFeedbackService)
 domain/
   user/              # 회원, 인증(JWT), 소셜 로그인(OAuth2), Role(USER/ADMIN)
   question/          # 면접 질문 + 관리자 CRUD
@@ -74,6 +74,7 @@ infra/
 | 캐시 | Spring Cache + Caffeine (로컬 캐시) |
 | 파일 추출 | Apache Tika 3.0.0 (이력서 텍스트 파싱) |
 | RSS | ROME 2.1.0 (기술 트렌드 수집) |
+| LLM 호출 | AWS Bedrock (AWS SDK v2 `bedrockruntime`, Converse API). 인증은 EC2 IAM 역할 — API 키 불필요 |
 | 검증 | Spring Validation |
 | 웹 | Spring Web MVC |
 | 보일러플레이트 | Lombok |
@@ -133,7 +134,7 @@ npm run preview          # 빌드 결과 미리보기(기본 4173)
 - 현재는 **모놀리식 단일 서비스**(`JobIT`)입니다. 기획서의 MSA 분리도(유저/문제/답변/알림/AI)는 **트래픽이 늘었을 때의 미래 계획**이며, 지금은 패키지 분리 수준으로 충분합니다.
 - 도메인은 `com.main.jobit.domain.<도메인>` 형태. 새 패턴 도입 전 기존 코드를 확인하세요.
 - **포트-어댑터 경계 두 곳을 존중**하세요. 이 경계가 미래 분리(MSA/Airflow 등)의 절단면입니다.
-  - `ai/port/LlmPort` — 도메인은 이 인터페이스만 의존. AI 교체(CLI → SDK/로컬 LLM, 모델 변경)는 구현체만 갈아끼움.
+  - `ai/port/LlmPort` — 도메인은 이 인터페이스만 의존. AI 교체(모델 변경·백엔드 변경)는 구현체만 갈아끼움. 현재 구현은 `BedrockLlmService`(AWS Bedrock).
   - `infra/publicjob/JobPostingFetcher` — 새 채용 소스(사람인/네이버 등)는 어댑터 하나 추가로 `JobPostingSyncService`에 자동 포함.
 - 외부 데이터 수집은 in-process `@Scheduled` + Caffeine 캐시로 동작 중(채용 6시간, RSS 3일). Airflow 등 별도 오케스트레이터는 소스가 늘고 재시도·백필 요구가 생길 때 합의 후 도입.
 
@@ -166,7 +167,7 @@ npm run preview          # 빌드 결과 미리보기(기본 4173)
 1. 회원가입 / 로그인 (JWT) + 소셜 로그인 (OAuth2)
 2. 직군·카테고리(CS/DB/네트워크/OS 등)·난이도(하/중/상)별 기술면접 질문 목록
 3. 답변 작성 및 저장, 다른 사용자 답변 열람, 댓글
-4. **AI 답변 피드백** (`AiFeedbackService`, 비동기) — 현재 어댑터는 `ClaudeCliService`
+4. **AI 답변 피드백** (`AiFeedbackService`, 비동기) — 현재 어댑터는 `BedrockLlmService`(AWS Bedrock, Converse API)
 5. **AI 이력서 피드백** (파일 업로드 → Tika 텍스트 추출 → LLM)
 6. 스터디 모집/신청/북마크
 7. 기술 트렌드 RSS 자동 수집·태깅
@@ -181,7 +182,7 @@ npm run preview          # 빌드 결과 미리보기(기본 4173)
 - 챗봇(직군별 문제 추천/채용 안내/학습 현황) — 구조화 데이터는 Tool Calling/Intent 라우팅, 비정형 텍스트는 RAG(pgvector) 검토
 - 외부 데이터 수집 오케스트레이션(Airflow 등)으로의 분리
 
-> AI 기능 고도화 시 `ClaudeCliService`(콜드 스타트·스트리밍 불가)는 SDK 기반 또는 로컬 LLM 어댑터로 교체 검토. 어느 쪽이든 `LlmPort` 구현체만 바꾸면 되도록 설계되어 있음.
+> 현재 어댑터는 `BedrockLlmService`(AWS Bedrock, Converse API, EC2 IAM 역할 인증). 단발 `generate()`만 구현돼 있어, 스트리밍·tool use가 필요한 챗봇/화상 면접 단계에서 `generateStream`/`converse`를 `LlmPort`에 추가 확장. 어느 쪽이든 `LlmPort` 구현체만 바꾸면 되도록 설계되어 있음.
 
 ---
 
@@ -232,7 +233,7 @@ npm run preview          # 빌드 결과 미리보기(기본 4173)
 - 분당 과금 — 비용 정책 사전 합의 필요
 
 ### 7.4 현재 환경에서 미리 알아둘 제약
-1. **`ClaudeCliService`는 면접용 부적합** — 매 turn `npx -y @anthropic-ai/claude-code` 콜드 스타트로 5~10초 지연, 스트리밍 불가. 착수 시점에 스트리밍 가능한 `LlmPort` 구현체로 교체 필요.
+1. **현재 `BedrockLlmService`는 단발 `generate()`만 지원** — 스트리밍 미구현. 화상/음성 면접 착수 시 `LlmPort`에 `generateStream`(Bedrock Converse 스트리밍) 추가 필요.
 2. **WebSocket / SSE 미도입** — 도입 시 `SecurityConfig`에 `/ws/**` 인가 정책, JWT 핸드셰이크 처리 추가.
 3. **세션 상태 저장소** — 회차당 다회 turn. 1차는 PostgreSQL 단순 저장 권장(Redis 미도입).
 4. **음성 파일 보관**(선택) — "내 면접 다시 듣기"가 필요하면 S3 연동.

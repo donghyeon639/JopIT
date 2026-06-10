@@ -31,6 +31,11 @@ dependencies {
     implementation 'com.rometools:rome-modules:2.1.0'
     implementation 'org.springframework.boot:spring-boot-starter-cache'
     implementation 'com.github.ben-manes.caffeine:caffeine'
+
+    // AWS Bedrock — LLM 호출 어댑터(BedrockLlmService). 인증은 EC2 IAM 역할이 자동 처리(키 불필요).
+    // 버전은 BOM이 일괄 관리. 필요 시 최신 2.x로 상향 가능.
+    implementation platform('software.amazon.awssdk:bom:2.28.0')
+    implementation 'software.amazon.awssdk:bedrockruntime'
     implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'

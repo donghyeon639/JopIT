@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 // 사용자 답변에 대한 AI 피드백을 비동기로 생성하는 애플리케이션 서비스.
-// 도메인은 LlmPort(포트)만 의존하고 구체 어댑터(ClaudeCliService 등)는 모른다 — 포트-어댑터 경계.
+// 도메인은 LlmPort(포트)만 의존하고 구체 어댑터(BedrockLlmService)는 모른다 — 포트-어댑터 경계.
 @Slf4j
 @Service
 @RequiredArgsConstructor
